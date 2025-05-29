@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>트레더리 Diablo2검색 링크생성</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <h2>트레더리 Diablo2검색 링크생성</h2>
+
+  <!-- 기존: 아이템 종류 선택 -->
+  <label>아이템 종류:</label>
+  <select id="itemKindSelect"></select>
+
+  <br>
+
+  <!-- 기존: 아이템 목록 -->
+  <label>아이템 목록:</label>
+  <select id="itemSelect"></select>
+  <img id="itemImage" src="" alt="" hidden>
+
+  <!-- ✅ 추가: 래더 / 스탠 -->
+  <label>서버 종류 (래더 여부):</label>
+  <select id="ladderSelect">
+    <option value="true">래더</option>
+    <option value="false">스탠</option>
+  </select>
+
+  <!-- ✅ 추가: 하코 / 소코 -->
+  <label>게임 모드:</label>
+  <select id="modeSelect">
+    <option value="softcore">소프트코어</option>
+    <option value="hardcore">하드코어</option>
+  </select>
+
+  <!-- ✅ 추가: 아이템 등급
+  <label>아이템 등급 (다중 선택):</label>
+  <select id="raritySelect" multiple size="5">
+    <option value="rare">레어</option>
+    <option value="magic">매직</option>
+    <option value="superior">고급</option>
+    <option value="normal">일반</option>
+    <option value="low quality">파괴된</option>
+  </select> -->
+  <!-- ✅ 추가: 에테리얼 여부 -->
+  <label>
+    <input type="checkbox" id="etherealCheck">
+    에테리얼만 보기
+  </label>
+
+  <!-- 옵션 입력 필드 -->
+  <div id="optionsContainer"></div>
+
+  <!-- URL 생성 버튼 -->
+  <button id="generateBtn">URL 생성</button>
+
+  <!-- 결과 영역 -->
+  <div class="result-box" id="resultBox" style="display:none;">
+    <p><strong>URL:</strong> <span id="resUrl"></span></p>
+    <p><strong>최근 등록일시:</strong> <span id="resDate"></span></p>
+    <p><strong>최저가:</strong> <span id="resPrice"></span></p>
+    <p><strong>최저가 등록일시:</strong> <span id="resPriceDate"></span></p>
+  </div>
+</body>
+</html>
