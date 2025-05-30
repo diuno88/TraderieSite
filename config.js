@@ -1,4 +1,4 @@
-const BASE = 'https://light-results-grab.loca.lt';
+const BASE = 'https://traderie-fastapi.example.com';
 
 const API_CONFIG = {
   ItemKinds: `${BASE}/ItemKinds`,
