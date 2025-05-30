@@ -1,4 +1,4 @@
-const BASE = 'https://traderie-fastapi.example.com';
+const BASE = 'https://waiver-templates-strength-console.trycloudflare.com';
 
 const API_CONFIG = {
   ItemKinds: `${BASE}/ItemKinds`,
