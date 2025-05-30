@@ -1,4 +1,4 @@
-const BASE = 'https://0ecc-3-36-66-98.ngrok-free.app';
+const BASE = 'https://3.36.66.98:8000';
 
 const API_CONFIG = {
   ItemKinds: `${BASE}/ItemKinds`,
