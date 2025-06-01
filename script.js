@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('generateBtn').addEventListener('click', async () => {
     const selectedItem = itemData.find(i => i.id == itemSelect.value);
+    if (!selectedItem) {
+	    alert("⚠ 아이템이 선택되지 않았습니다. 다시 선택해주세요.");
+	    return;
+    }
+    console.log("선택된 아이템:", selectedItem);
     const optionInputs = document.querySelectorAll('.option-group, #materialOptionInputs');
     const options = [];
 
