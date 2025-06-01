@@ -1,6 +1,32 @@
 let itemData = [];
 let selectedKind = "";
 
+document.getElementById('itemSearchInput').addEventListener('input', () => {
+  const keyword = document.getElementById('itemSearchInput').value.trim();
+  const filtered = itemData.filter(item =>
+    (item.korName || item.koKR || item.name || "").includes(keyword)
+  );
+
+  const itemSelect = document.getElementById('itemSelect');
+  itemSelect.innerHTML = '';
+  filtered.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.id;
+    option.textContent = item.korName || item.koKR || item.name;
+    itemSelect.appendChild(option);
+  });
+
+  // 첫 번째 필터링된 항목의 옵션 보여주기
+  if (filtered.length > 0) {
+    showItemOptions(filtered[0], selectedKind);
+  } else {
+    document.getElementById('optionsContainer').innerHTML = '';
+    document.getElementById('itemImage').hidden = true;
+  }
+});
+
+
+
 document.addEventListener('DOMContentLoaded', async () => {
   const kindSelect = document.getElementById('itemKindSelect');
   const itemSelect = document.getElementById('itemSelect');
