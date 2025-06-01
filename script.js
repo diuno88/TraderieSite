@@ -72,102 +72,104 @@ document.addEventListener('DOMContentLoaded', async () => {
     showItemOptions(selectedItem, selectedKind);
   });
 
-  document.getElementById('generateBtn').addEventListener('click', async () => {
-    const selectedItem = itemData.find(i => i.id == itemSelect.value);
-    if (!selectedItem) {
-	    alert("⚠ 아이템이 선택되지 않았습니다. 다시 선택해주세요.");
-	    return;
+
+document.getElementById('generateBtn').addEventListener('click', async () => {
+  const selectedItem = itemData.find(i => i.id == itemSelect.value);
+  if (!selectedItem) {
+    alert("⚠ 아이템이 선택되지 않았습니다. 다시 선택해주세요.");
+    return;
+  }
+
+  console.log("선택된 아이템:", selectedItem);
+
+  const optionInputs = document.querySelectorAll('.option-group, #materialOptionInputs');
+  const options = [];
+
+  optionInputs.forEach(el => {
+    const key = el.dataset.key || null;
+    const minInput = el.querySelector('.min');
+    const maxInput = el.querySelector('.max');
+    const min = minInput ? minInput.value : '';
+    const max = maxInput ? maxInput.value : '';
+
+    if (min || max) {
+      options.push({ key, min, max });
     }
-    console.log("선택된 아이템:", selectedItem);
-    const optionInputs = document.querySelectorAll('.option-group, #materialOptionInputs');
-    const options = [];
+  });
 
-    optionInputs.forEach(el => {
-      const key = el.dataset.key || null;
-      const minInput = el.querySelector('.min');
-      const maxInput = el.querySelector('.max');
-      const min = minInput ? minInput.value : '';
-      const max = maxInput ? maxInput.value : '';
+  const ladder = document.getElementById('ladderSelect').value === 'true';
+  const mode = document.getElementById('modeSelect').value;
+  const ethereal = document.getElementById('etherealCheck').checked;
 
-      if (min || max) {
-        options.push({ key, min, max });
-      }
-    });
+  const payload = {
+    ItemKinds: selectedKind,
+    ItemKey: selectedItem.id,
+    Options: options.map(opt => ({
+      key: Number(opt.key),
+      min: opt.min ? Number(opt.min) : null,
+      max: opt.max ? Number(opt.max) : null,
+    })),
+    prop_Ladder: ladder,
+    prop_Mode: mode,
+    prop_Ethereal: ethereal,
+    //prop_Rarity: rarityOptions,
+  };
 
-    // ⚠️ 추가: 필터 요소 값 가져오기
-    const ladder = document.getElementById('ladderSelect').value === 'true';
-    const mode = document.getElementById('modeSelect').value;
-    const ethereal = document.getElementById('etherealCheck').checked;
+  console.log("요청 payload:", payload);
 
-    //const rarityOptions = Array.from(document.getElementById('raritySelect').selectedOptions).map(opt => opt.value);
+  const res = await fetch(API_CONFIG.MakeTraderieUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 
-    // ⚠️ payload 확장
-    const payload = {
-      ItemKinds: selectedKind,
-      ItemKey: selectedItem.id,
-      Options: options.map(opt => ({
-        key: Number(opt.key),
-        min: opt.min ? Number(opt.min) : null,
-        max: opt.max ? Number(opt.max) : null,
-      })),
-      prop_Ladder: ladder,
-      prop_Mode: mode,
-      prop_Ethereal: ethereal,
-      //prop_Rarity: rarityOptions,
-    };
+  const json = await res.json();
+  document.getElementById('resultBox').style.display = 'block';
 
-    console.log(payload);
+  document.getElementById('resUrl').textContent = json.real_url;
+  document.getElementById('resLink').href = json.real_url;
+  document.getElementById('resDate').textContent = json.base_url;
+  document.getElementById('resPrice').textContent = json.LowPrice;
+  document.getElementById('resPriceDate').textContent = json.LowPriceDate;
 
-    const res = await fetch(API_CONFIG.MakeTraderieUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+  // ✅ 매물 테이블 처리
+  const tableBody = document.querySelector('#listingTable tbody');
+  tableBody.innerHTML = ''; // 테이블 초기화
 
-    const json = await res.json();
-    document.getElementById('resultBox').style.display = 'block';
-    document.getElementById('resUrl').textContent = json.real_url;
-    //document.getElementById('resDate').textContent = json.LastResisDate;
-	document.getElementById('resDate').textContent = json.base_url;
-    document.getElementById('resPrice').textContent = json.LowPrice;
-    document.getElementById('resPriceDate').textContent = json.LowPriceDate;
-    // 매물 테이블 생성
-	const tableBody = document.querySelector('#listingTable tbody');
-	tableBody.innerHTML = ''; // 기존 내용 초기화
-	
-	(json.listings || []).forEach((listing, index) => {
-	  const row = document.createElement('tr');
-	
-	  const numCell = document.createElement('td');
-	  numCell.textContent = index + 1;
-	
-	  const priceCell = document.createElement('td');
-	  priceCell.textContent = listing.price;
-	
-	  const dateCell = document.createElement('td');
-	  dateCell.textContent = listing.updated_at;
-	
-	  const linkCell = document.createElement('td');
-	  const link = document.createElement('a');
-	  link.href = `https://traderie.com/diablo2resurrected/listing/${listing.id}`;
-	  link.textContent = '확인';
-	  link.target = '_blank';
-	  link.style.color = '#1a73e8';  // 보기 좋게 파란색 링크
-	
-	  linkCell.appendChild(link);
-	
-	  row.appendChild(numCell);
-	  row.appendChild(priceCell);
-	  row.appendChild(dateCell);
-	  row.appendChild(linkCell);
-	
-	  tableBody.appendChild(row);
-	});
+  (json.listings || []).forEach((listing, index) => {
+    const row = document.createElement('tr');
 
-	  
+    const numCell = document.createElement('td');
+    numCell.textContent = index + 1;
+
+    const priceCell = document.createElement('td');
+    priceCell.textContent = listing.price;
+
+    const dateCell = document.createElement('td');
+    dateCell.textContent = listing.updated_at;
+
+    const linkCell = document.createElement('td');
+    const link = document.createElement('a');
+    link.href = `https://traderie.com/diablo2resurrected/listing/${listing.id}`;
+    link.textContent = '확인';
+    link.target = '_blank';
+    link.style.color = '#1a73e8';
+
+    linkCell.appendChild(link);
+
+    row.appendChild(numCell);
+    row.appendChild(priceCell);
+    row.appendChild(dateCell);
+    row.appendChild(linkCell);
+
+    tableBody.appendChild(row);
   });
 });
 
+
+
+
+	
 function showItemOptions(item, kind) {
   const container = document.getElementById('optionsContainer');
   container.innerHTML = '';
