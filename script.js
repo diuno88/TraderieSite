@@ -108,8 +108,8 @@ function showItemOptions(item, kind) {
   container.innerHTML = '';
 
   const image = document.getElementById('itemImage');
-  if (item && item.imageUrl) {
-    image.src = item.imageUrl;
+  if (item && item.img) {
+    image.src = item.img;
     image.hidden = false;
   } else {
     image.hidden = true;
