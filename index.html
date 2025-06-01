@@ -59,15 +59,28 @@
   <button id="generateBtn">URL 생성</button>
 
   <!-- 결과 영역 -->
-  <div class="result-box" id="resultBox" style="display:none;">
-    <p><p><strong>URL:</strong> 
+<div class="result-box" id="resultBox" style="display:none;">
+  <p><strong>URL:</strong> 
     <a id="resLink" href="" target="_blank">
       <span id="resUrl"></span>
     </a>
-    </p>
-    <p><strong>최근 등록일시:</strong> <span id="resDate"></span></p>
-    <p><strong>최저가:</strong> <span id="resPrice"></span></p>
-    <p><strong>최저가 등록일시:</strong> <span id="resPriceDate"></span></p>
-  </div>
+  </p>
+  <p><strong>최근 등록일시:</strong> <span id="resDate"></span></p>
+  <p><strong>최저가:</strong> <span id="resPrice"></span></p>
+  <p><strong>최저가 등록일시:</strong> <span id="resPriceDate"></span></p>
+
+  <!-- ✅ 매물 리스트 테이블 추가 -->
+  <table id="listingTable" border="1" cellpadding="6" style="margin-top: 12px; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th>순번</th>
+        <th>가격</th>
+        <th>등록일시</th>
+        <th>확인</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 </body>
 </html>
