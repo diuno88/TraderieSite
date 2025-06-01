@@ -131,6 +131,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 	document.getElementById('resDate').textContent = json.base_url;
     document.getElementById('resPrice').textContent = json.LowPrice;
     document.getElementById('resPriceDate').textContent = json.LowPriceDate;
+    // 매물 테이블 생성
+	const tableBody = document.querySelector('#listingTable tbody');
+	tableBody.innerHTML = ''; // 기존 내용 초기화
+	
+	(json.listings || []).forEach((listing, index) => {
+	  const row = document.createElement('tr');
+	
+	  const numCell = document.createElement('td');
+	  numCell.textContent = index + 1;
+	
+	  const priceCell = document.createElement('td');
+	  priceCell.textContent = listing.price;
+	
+	  const dateCell = document.createElement('td');
+	  dateCell.textContent = listing.updated_at;
+	
+	  const linkCell = document.createElement('td');
+	  const link = document.createElement('a');
+	  link.href = `https://traderie.com/diablo2resurrected/listing/${listing.id}`;
+	  link.textContent = '확인';
+	  link.target = '_blank';
+	  link.style.color = '#1a73e8';  // 보기 좋게 파란색 링크
+	
+	  linkCell.appendChild(link);
+	
+	  row.appendChild(numCell);
+	  row.appendChild(priceCell);
+	  row.appendChild(dateCell);
+	  row.appendChild(linkCell);
+	
+	  tableBody.appendChild(row);
+	});
+
+	  
   });
 });
 
@@ -166,35 +200,4 @@ function showItemOptions(item, kind) {
   }
 }
 
-// 매물 테이블 생성
-const tableBody = document.querySelector('#listingTable tbody');
-tableBody.innerHTML = ''; // 기존 내용 초기화
 
-(json.listings || []).forEach((listing, index) => {
-  const row = document.createElement('tr');
-
-  const numCell = document.createElement('td');
-  numCell.textContent = index + 1;
-
-  const priceCell = document.createElement('td');
-  priceCell.textContent = listing.price;
-
-  const dateCell = document.createElement('td');
-  dateCell.textContent = listing.updated_at;
-
-  const linkCell = document.createElement('td');
-  const link = document.createElement('a');
-  link.href = `https://traderie.com/diablo2resurrected/listing/${listing.id}`;
-  link.textContent = '확인';
-  link.target = '_blank';
-  link.style.color = '#1a73e8';  // 보기 좋게 파란색 링크
-
-  linkCell.appendChild(link);
-
-  row.appendChild(numCell);
-  row.appendChild(priceCell);
-  row.appendChild(dateCell);
-  row.appendChild(linkCell);
-
-  tableBody.appendChild(row);
-});
