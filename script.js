@@ -16,7 +16,6 @@ document.getElementById('itemSearchInput').addEventListener('input', () => {
     itemSelect.appendChild(option);
   });
 
-  // 첫 번째 필터링된 항목의 옵션 보여주기
   if (filtered.length > 0) {
     showItemOptions(filtered[0], selectedKind);
   } else {
@@ -25,12 +24,12 @@ document.getElementById('itemSearchInput').addEventListener('input', () => {
   }
 });
 
-
-
 document.addEventListener('DOMContentLoaded', async () => {
   const kindSelect = document.getElementById('itemKindSelect');
   const itemSelect = document.getElementById('itemSelect');
   const optionsContainer = document.getElementById('optionsContainer');
+  const categoryWrapper = document.getElementById('categoryWrapper');
+  const categorySelect = document.getElementById('categorySelect');
 
   const res = await fetch(API_CONFIG.ItemKinds);
   const data = await res.json();
@@ -43,23 +42,64 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   kindSelect.addEventListener('change', async () => {
     selectedKind = kindSelect.value;
-    const itemRes = await fetch(API_CONFIG.ItemList, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ kind: selectedKind })
-    });
-    const itemDataRes = await itemRes.json();
-    itemData = itemDataRes.items || [];
+	const itemRes = await fetch(API_CONFIG.ItemList, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: selectedKind })
+      });
+    if (['material', 'magic', 'rare'].includes(selectedKind)) {
+      categoryWrapper.style.display = 'block';
+//      const ctgRes = await fetch(`/categories?kind=${selectedKind}`);
+      const ctgData = await itemRes.json();
+      const ctgList = ctgData.categories || [];
+      categorySelect.innerHTML = '';
+      ctgList.forEach(ctg => {
+        const opt = document.createElement('option');
+        opt.value = ctg;
+        opt.textContent = ctg;
+        categorySelect.appendChild(opt);
+      });
+      if (ctgList.length > 0) {
+        categorySelect.dispatchEvent(new Event('change'));
+      }
+    } else {
+      categoryWrapper.style.display = 'none';
+      const itemDataRes = await itemRes.json();
+      itemData = itemDataRes.items || [];
 
+      itemSelect.innerHTML = '';
+      itemData.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item.korName || item.koKR || item.name;
+        itemSelect.appendChild(option);
+      });
+
+      if (itemData.length > 0) {
+        showItemOptions(itemData[0], selectedKind);
+      } else {
+        optionsContainer.innerHTML = '';
+        document.getElementById('itemImage').hidden = true;
+      }
+    }
+  });
+
+  categorySelect.addEventListener('change', async () => {
+    const ctg = categorySelect.value;
+    const url = `${API_CONFIG.selectCategories}?kind=${encodeURIComponent(selectedKind)}&ctg=${encodeURIComponent(ctg)}`;
+    const ctgRes = await fetch(url);
+    const data = await ctgRes.json();
+
+    itemData = data.items || [];
     itemSelect.innerHTML = '';
     itemData.forEach(item => {
       const option = document.createElement('option');
       option.value = item.id;
-      option.textContent = item.korName || item.koKR || item.name;
+      option.textContent = item.name || item.korName || item.koKR;
       itemSelect.appendChild(option);
     });
 
-    if(itemData.length > 0){
+    if (itemData.length > 0) {
       showItemOptions(itemData[0], selectedKind);
     } else {
       optionsContainer.innerHTML = '';
@@ -71,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selectedItem = itemData.find(i => i.id == itemSelect.value);
     showItemOptions(selectedItem, selectedKind);
   });
-
+});
 
 document.getElementById('generateBtn').addEventListener('click', async () => {
   const selectedItem = itemData.find(i => i.id == itemSelect.value);
@@ -80,18 +120,14 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
     return;
   }
 
-  console.log("선택된 아이템:", selectedItem);
-
   const optionInputs = document.querySelectorAll('.option-group, #materialOptionInputs');
   const options = [];
-
   optionInputs.forEach(el => {
     const key = el.dataset.key || null;
     const minInput = el.querySelector('.min');
     const maxInput = el.querySelector('.max');
     const min = minInput ? minInput.value : '';
     const max = maxInput ? maxInput.value : '';
-
     if (min || max) {
       options.push({ key, min, max });
     }
@@ -111,11 +147,8 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
     })),
     prop_Ladder: ladder,
     prop_Mode: mode,
-    prop_Ethereal: ethereal,
-    //prop_Rarity: rarityOptions,
+    prop_Ethereal: ethereal
   };
-
-  console.log("요청 payload:", payload);
 
   const res = await fetch(API_CONFIG.MakeTraderieUrl, {
     method: 'POST',
@@ -126,15 +159,8 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
   const json = await res.json();
   document.getElementById('resultBox').style.display = 'block';
 
-  document.getElementById('resUrl').textContent = json.real_url;
-  document.getElementById('resLink').href = json.real_url;
-  document.getElementById('resDate').textContent = json.base_url;
-  document.getElementById('resPrice').textContent = json.LowPrice;
-  document.getElementById('resPriceDate').textContent = json.LowPriceDate;
-
-  // ✅ 매물 테이블 처리
   const tableBody = document.querySelector('#listingTable tbody');
-  tableBody.innerHTML = ''; // 테이블 초기화
+  tableBody.innerHTML = '';
 
   (json.listings || []).forEach((listing, index) => {
     const row = document.createElement('tr');
@@ -166,10 +192,6 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
   });
 });
 
-
-
-
-	
 function showItemOptions(item, kind) {
   const container = document.getElementById('optionsContainer');
   container.innerHTML = '';
@@ -196,10 +218,8 @@ function showItemOptions(item, kind) {
       container.appendChild(div);
     });
   } else if (kind === 'material') {
-    //재료베이스 크롤링필요
+    // 재료베이스 크롤링 필요
   } else {
     // 옵션이 없으면 비워두기
   }
 }
-
-
