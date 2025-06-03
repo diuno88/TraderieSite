@@ -16,17 +16,22 @@
   <select id="itemKindSelect"></select>
 
   <br>
-  <div id="categoryWrapper" style="display: none; margin-top: 8px;">
-	<label>카테고리:</label>
-	<select id="categorySelect"></select>
-  </div>
-  <br>
-  <!-- 기존: 아이템 목록 -->
-  <label>아이템 목록:</label>
-  <div style="display: flex; align-items: center; gap: 16px;">
-  <select id="itemSelect"></select>
-  <img id="itemImage" src="" alt="아이템 이미지" hidden style="width: 100px; height: auto;">
-  </div>
+	<div class="row" id="categoryWrapper" style="display: none;">
+	  <label for="categorySelect">카테고리:</label>
+	  <select id="categorySelect"></select>
+	</div>
+
+	<div class="row">
+	  <label for="itemSelect">아이템 목록:</label>
+	  <select id="itemSelect"></select>
+	  <img id="itemImage" src="" alt="아이템 이미지" hidden>
+	</div>
+	<div class="row" style="margin-top: 12px;">
+	  <label for="optionCombo">옵션 선택:</label>
+	  <select id="optionCombo">
+		<option value="">옵션을 선택하세요</option>
+	  </select>
+	</div>
   <!-- ✅ 추가: 래더 / 스탠 -->
   <label>서버 종류 (래더 여부):</label>
   <select id="ladderSelect">
