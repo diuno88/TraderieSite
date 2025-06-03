@@ -33,3 +33,22 @@ img {
   background: #e9ffe9;
   border: 1px solid #4caf50;
 }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap; /* 창 너비 좁아질 때 줄바꿈 허용 */
+  margin-top: 8px;
+}
+
+.row label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+#itemImage {
+  width: 100px;
+  height: auto;
+  margin-left: 10px;
+}
