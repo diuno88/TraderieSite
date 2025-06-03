@@ -30,9 +30,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const optionsContainer = document.getElementById('optionsContainer');
   const categoryWrapper = document.getElementById('categoryWrapper');
   const categorySelect = document.getElementById('categorySelect');
+  const optionCombo = document.getElementById('optionCombo');
+
+  // ✅ 기본 옵션 추가
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.textContent = '- 선택하세요 -';
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  kindSelect.appendChild(defaultOption);
+
 
   const res = await fetch(API_CONFIG.ItemKinds);
   const data = await res.json();
+  
   data.kinds.forEach(kind => {
     const option = document.createElement('option');
     option.value = kind.key;
@@ -52,17 +63,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 //      const ctgRes = await fetch(`/categories?kind=${selectedKind}`);
       const ctgData = await itemRes.json();
       const ctgList = ctgData.categories || [];
+	  optionCombo.style.display = 'inline-block'; // 또는 'block'
+	  // ✅ 여기서 options 처리
+	  if (ctgData.options) {
+		loadOptionComboBox(ctgData.options);
+	  }
+	  
       categorySelect.innerHTML = '';
       ctgList.forEach(ctg => {
         const opt = document.createElement('option');
-        opt.value = ctg;
-        opt.textContent = ctg;
+        opt.value = ctg.id;
+        opt.textContent = ctg.korName ? `${ctg.id} (${ctg.korName})` : ctg.id;
         categorySelect.appendChild(opt);
       });
       if (ctgList.length > 0) {
         categorySelect.dispatchEvent(new Event('change'));
       }
     } else {
+	  optionCombo.style.display = 'none';
       categoryWrapper.style.display = 'none';
       const itemDataRes = await itemRes.json();
       itemData = itemDataRes.items || [];
@@ -86,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   categorySelect.addEventListener('change', async () => {
     const ctg = categorySelect.value;
+	console.log(ctg.ctg);
     const url = `${API_CONFIG.selectCategories}?kind=${encodeURIComponent(selectedKind)}&ctg=${encodeURIComponent(ctg)}`;
     const ctgRes = await fetch(url);
     const data = await ctgRes.json();
@@ -98,7 +117,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       option.textContent = item.name || item.korName || item.koKR;
       itemSelect.appendChild(option);
     });
-
+	// ✅ 옵션 콤보박스 초기화 (optionPath는 서버 응답 내 포함되어야 함)
+	//if (data.options) {
+	//	await loadOptionComboBoxFromPath(data.options);
+	//}
     if (itemData.length > 0) {
       showItemOptions(itemData[0], selectedKind);
     } else {
@@ -223,3 +245,29 @@ function showItemOptions(item, kind) {
     // 옵션이 없으면 비워두기
   }
 }
+function formatOptionText(opt) {
+  if (!opt.koKR) return opt.name;
+
+  let formatted = opt.koKR;
+
+  // 임시 치환값 (사람이 알아보기 쉽게 예시 숫자 적용)
+  formatted = formatted
+    .replace(/%d/g, '10')
+    .replace(/%s/g, '스킬명')
+    .replace(/%%/g, '%'); // 실제 퍼센트 기호
+
+  return formatted;
+}
+
+async function loadOptionComboBox(optionJson) {
+  const combo = document.getElementById('optionCombo');
+  combo.innerHTML = '<option value="">옵션을 선택하세요</option>';
+
+  optionJson.forEach(opt => {
+    const option = document.createElement('option');
+    option.value = opt.id;
+    option.textContent = formatOptionText(opt);
+    combo.appendChild(option);
+  });
+}
+
