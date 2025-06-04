@@ -1,8 +1,15 @@
+// 📌 전역 변수
 let itemData = [];
 let selectedKind = "";
+let selectedItems = [];
+let selectedOptions = [];
+let allOptionData = []; // ✅ 전체 옵션 저장
 
-document.getElementById('itemSearchInput').addEventListener('input', () => {
-  const keyword = document.getElementById('itemSearchInput').value.trim();
+
+// 🔍 아이템 검색 입력
+const itemSearchInput = document.getElementById('itemSearchInput');
+itemSearchInput.addEventListener('input', () => {
+  const keyword = itemSearchInput.value.trim();
   const filtered = itemData.filter(item =>
     (item.korName || item.koKR || item.name || "").includes(keyword)
   );
@@ -24,6 +31,8 @@ document.getElementById('itemSearchInput').addEventListener('input', () => {
   }
 });
 
+// 초기 로딩
+
 document.addEventListener('DOMContentLoaded', async () => {
   const kindSelect = document.getElementById('itemKindSelect');
   const itemSelect = document.getElementById('itemSelect');
@@ -31,8 +40,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const categoryWrapper = document.getElementById('categoryWrapper');
   const categorySelect = document.getElementById('categorySelect');
   const optionCombo = document.getElementById('optionCombo');
+  const optionSearchInput= document.getElementById('optionSearchInput');
 
-  // ✅ 기본 옵션 추가
   const defaultOption = document.createElement('option');
   defaultOption.value = '';
   defaultOption.textContent = '- 선택하세요 -';
@@ -40,35 +49,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   defaultOption.selected = true;
   kindSelect.appendChild(defaultOption);
 
-
   const res = await fetch(API_CONFIG.ItemKinds);
   const data = await res.json();
-  
   data.kinds.forEach(kind => {
     const option = document.createElement('option');
     option.value = kind.key;
     option.textContent = kind.name.name;
     kindSelect.appendChild(option);
   });
-
+  optionSearchInput.addEventListener('input', () => {
+	const keyword = document.getElementById('optionSearchInput').value.trim();
+	const filtered = allOptionData.filter(opt => {
+		const text = formatOptionText(opt);
+		return text.includes(keyword);
+	});
+	renderOptionCombo(filtered);
+  });
   kindSelect.addEventListener('change', async () => {
     selectedKind = kindSelect.value;
-	const itemRes = await fetch(API_CONFIG.ItemList, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kind: selectedKind })
-      });
-    if (['material', 'magic', 'rare'].includes(selectedKind)) {
+
+    // 선택에 따라 UI 컨트롤 표시 여부 조절
+    const showExtras = ['material', 'magic', 'rare'].includes(selectedKind);
+    document.getElementById('selectedItemsWrapper').style.display = showExtras ? 'block' : 'none';
+    document.getElementById('selectedOptionsWrapper').style.display = showExtras ? 'block' : 'none';
+    document.getElementById('addItemBtn').style.display = showExtras ? 'inline-block' : 'none';
+
+    if (showExtras) {
+      selectedItems = [];
+      selectedOptions = [];
+      renderSelectedItems();
+      renderSelectedOptions();
+    }
+
+    const itemRes = await fetch(API_CONFIG.ItemList, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: selectedKind })
+    });
+
+    if (showExtras) {
       categoryWrapper.style.display = 'block';
-//      const ctgRes = await fetch(`/categories?kind=${selectedKind}`);
       const ctgData = await itemRes.json();
       const ctgList = ctgData.categories || [];
-	  optionCombo.style.display = 'inline-block'; // 또는 'block'
-	  // ✅ 여기서 options 처리
-	  if (ctgData.options) {
-		loadOptionComboBox(ctgData.options);
-	  }
-	  
+      optionCombo.style.display = 'inline-block';
+      if (ctgData.options) loadOptionComboBox(ctgData.options);
       categorySelect.innerHTML = '';
       ctgList.forEach(ctg => {
         const opt = document.createElement('option');
@@ -76,15 +100,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         opt.textContent = ctg.korName ? `${ctg.id} (${ctg.korName})` : ctg.id;
         categorySelect.appendChild(opt);
       });
-      if (ctgList.length > 0) {
-        categorySelect.dispatchEvent(new Event('change'));
-      }
+      if (ctgList.length > 0) categorySelect.dispatchEvent(new Event('change'));
     } else {
-	  optionCombo.style.display = 'none';
       categoryWrapper.style.display = 'none';
+      optionCombo.style.display = 'none';
       const itemDataRes = await itemRes.json();
       itemData = itemDataRes.items || [];
-
       itemSelect.innerHTML = '';
       itemData.forEach(item => {
         const option = document.createElement('option');
@@ -92,7 +113,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         option.textContent = item.korName || item.koKR || item.name;
         itemSelect.appendChild(option);
       });
-
       if (itemData.length > 0) {
         showItemOptions(itemData[0], selectedKind);
       } else {
@@ -104,7 +124,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   categorySelect.addEventListener('change', async () => {
     const ctg = categorySelect.value;
-	console.log(ctg.ctg);
     const url = `${API_CONFIG.selectCategories}?kind=${encodeURIComponent(selectedKind)}&ctg=${encodeURIComponent(ctg)}`;
     const ctgRes = await fetch(url);
     const data = await ctgRes.json();
@@ -114,16 +133,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     itemData.forEach(item => {
       const option = document.createElement('option');
       option.value = item.id;
-      option.textContent = item.name || item.korName || item.koKR;
+      option.textContent = item.korName || item.koKR || item.name || item.id;
       itemSelect.appendChild(option);
     });
-	// ✅ 옵션 콤보박스 초기화 (optionPath는 서버 응답 내 포함되어야 함)
-	//if (data.options) {
-	//	await loadOptionComboBoxFromPath(data.options);
-	//}
-    if (itemData.length > 0) {
-      showItemOptions(itemData[0], selectedKind);
-    } else {
+    if (itemData.length > 0) showItemOptions(itemData[0], selectedKind);
+    else {
       optionsContainer.innerHTML = '';
       document.getElementById('itemImage').hidden = true;
     }
@@ -133,44 +147,249 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selectedItem = itemData.find(i => i.id == itemSelect.value);
     showItemOptions(selectedItem, selectedKind);
   });
+  
+  document.getElementById('resetBtn').addEventListener('click', () => {
+	  // 1. 콤보박스 초기화
+	  document.getElementById('itemKindSelect').value = '';
+	  document.getElementById('categorySelect').innerHTML = '';
+	  document.getElementById('itemSelect').innerHTML = '';
+	  document.getElementById('optionCombo').innerHTML = '<option value="">옵션을 선택하세요</option>';
+	  document.getElementById('optionCombo').style.display = 'none';
+
+	  // 2. 검색 입력 초기화
+	  document.getElementById('itemSearchInput').value = '';
+
+	  // 3. 옵션/아이템 관련 영역 초기화 및 숨김
+	  document.getElementById('optionsContainer').innerHTML = '';
+	  document.getElementById('itemImage').hidden = true;
+	  document.getElementById('addItemBtn').style.display = 'none';
+	  document.getElementById('selectedItemsWrapper').style.display = 'none';
+	  document.getElementById('selectedOptionsWrapper').style.display = 'none';
+	  document.getElementById('itemList').innerHTML = '';
+	  document.getElementById('optionList').innerHTML = '';
+
+	  // 4. 상태 변수 초기화
+	  selectedItems = [];
+	  selectedOptions = [];
+	  selectedKind = '';
+	  itemData = [];
+
+	  // 5. 결과 영역 초기화
+	  document.getElementById('resultBox').style.display = 'none';
+	  document.querySelector('#listingTable tbody').innerHTML = '';
+	});
+
 });
 
-document.getElementById('generateBtn').addEventListener('click', async () => {
-  const selectedItem = itemData.find(i => i.id == itemSelect.value);
-  if (!selectedItem) {
-    alert("⚠ 아이템이 선택되지 않았습니다. 다시 선택해주세요.");
-    return;
+// 옵션 콤보박스 로딩
+async function loadOptionComboBox(optionJson) {
+  allOptionData = optionJson; // 원본 저장
+  renderOptionCombo(allOptionData);
+}
+function renderOptionCombo(list) {
+  const combo = document.getElementById('optionCombo');
+  combo.innerHTML = '<option value="">옵션을 선택하세요</option>';
+  list.forEach(opt => {
+    const option = document.createElement('option');
+    option.value = opt.id;
+    option.textContent = formatOptionText(opt);
+    combo.appendChild(option);
+  });
+}
+function formatOptionText(opt) {
+  if (!opt.koKR) return opt.name;
+  return opt.koKR.replace(/%d/g, '10').replace(/%s/g, '스킬명').replace(/%%/g, '%');
+}
+
+// 옵션 표시
+function showItemOptions(item, kind) {
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  const image = document.getElementById('itemImage');
+  if (item && item.img) {
+    image.src = item.img;
+    image.hidden = false;
+  } else {
+    image.hidden = true;
   }
 
-  const optionInputs = document.querySelectorAll('.option-group, #materialOptionInputs');
-  const options = [];
-  optionInputs.forEach(el => {
-    const key = el.dataset.key || null;
-    const minInput = el.querySelector('.min');
-    const maxInput = el.querySelector('.max');
-    const min = minInput ? minInput.value : '';
-    const max = maxInput ? maxInput.value : '';
-    if (min || max) {
-      options.push({ key, min, max });
-    }
-  });
+  if (kind === 'unique' && Array.isArray(item.description_filtered)) {
+    item.description_filtered.forEach(opt => {
+      const div = document.createElement('div');
+      div.className = 'option-group';
+      div.dataset.key = opt.property_id;
+      div.innerHTML = `
+        <label>${opt.property_kor}</label><br>
+        min: <input type="number" class="min" value="${opt.min ?? ''}"> 
+        max: <input type="number" class="max" value="${opt.max ?? ''}">
+      `;
+      container.appendChild(div);
+    });
+  }
+}
 
+// 아이템 추가
+const addItemBtn = document.getElementById('addItemBtn');
+addItemBtn.addEventListener('click', () => {
+  if (!['material', 'magic', 'rare'].includes(selectedKind)) return;
+  const itemSelect = document.getElementById('itemSelect');
+  const selectedItemId = itemSelect.value;
+  const item = itemData.find(i => i.id == selectedItemId);
+  if (!item || selectedItems.find(i => i.id === item.id)) return;
+  selectedItems.push(item);
+  renderSelectedItems();
+});
+
+function renderSelectedItems() {
+  const list = document.getElementById('itemList');
+  list.innerHTML = '';
+  selectedItems.forEach((item, idx) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${selectedKind} | ${item.korName || item.name}
+      <img src="${item.img}" alt="" width="30" style="vertical-align:middle;">
+      <button onclick="removeSelectedItem(${idx})">삭제</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+function removeSelectedItem(index) {
+  selectedItems.splice(index, 1);
+  renderSelectedItems();
+}
+
+// 옵션 선택
+const optionCombo = document.getElementById('optionCombo');
+optionCombo.addEventListener('change', () => {
+  if (!['material', 'magic', 'rare'].includes(selectedKind)) return;
+  const selectedId = optionCombo.value;
+  const selectedText = optionCombo.options[optionCombo.selectedIndex].text;
+  if (!selectedId || selectedOptions.find(opt => opt.key == selectedId)) return;
+  selectedOptions.push({ key: selectedId, min: '', max: '', label: selectedText });
+  renderSelectedOptions();
+});
+
+function renderSelectedOptions() {
+  const list = document.getElementById('optionList');
+  list.innerHTML = '';
+  selectedOptions.forEach((opt, idx) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${opt.label}
+      min: <input type="number" class="optMin" data-idx="${idx}" value="${opt.min}" style="width:50px;">
+      max: <input type="number" class="optMax" data-idx="${idx}" value="${opt.max}" style="width:50px;">
+      <button onclick="removeOption(${idx})">삭제</button>
+    `;
+    list.appendChild(li);
+  });
+  document.querySelectorAll('.optMin').forEach(input => {
+    input.addEventListener('input', e => {
+      const i = e.target.dataset.idx;
+      selectedOptions[i].min = e.target.value;
+    });
+  });
+  document.querySelectorAll('.optMax').forEach(input => {
+    input.addEventListener('input', e => {
+      const i = e.target.dataset.idx;
+      selectedOptions[i].max = e.target.value;
+    });
+  });
+}
+
+function removeOption(index) {
+  selectedOptions.splice(index, 1);
+  renderSelectedOptions();
+}
+
+// URL 생성 버튼 클릭
+const generateBtn = document.getElementById('generateBtn');
+generateBtn.addEventListener('click', async () => {
   const ladder = document.getElementById('ladderSelect').value === 'true';
   const mode = document.getElementById('modeSelect').value;
   const ethereal = document.getElementById('etherealCheck').checked;
+  const loadingBox = document.getElementById('loadingBox');
+  const resultBox = document.getElementById('resultBox');
+  resultBox.style.display = 'none';
+  loadingBox.style.display = 'block';
+  const startTime = Date.now(); // 시작 시각 저장
+  let payload;
 
-  const payload = {
-    ItemKinds: selectedKind,
-    ItemKey: selectedItem.id,
-    Options: options.map(opt => ({
-      key: Number(opt.key),
-      min: opt.min ? Number(opt.min) : null,
-      max: opt.max ? Number(opt.max) : null,
-    })),
-    prop_Ladder: ladder,
-    prop_Mode: mode,
-    prop_Ethereal: ethereal
-  };
+  if (['material', 'magic', 'rare'].includes(selectedKind)) {
+    if (selectedItems.length === 0) {
+      alert("⚠ 아이템을 하나 이상 추가해주세요.");
+      return;
+    }
+	try{
+		payload = {
+		  items: selectedItems.map(item => ({
+			kind: selectedKind,
+			itemKey: item.id,
+			img: item.img
+		  })),
+		  options: selectedOptions.map(opt => ({
+			key: Number(opt.key),
+			min: opt.min ? Number(opt.min) : null,
+			max: opt.max ? Number(opt.max) : null
+		  })),
+		  prop_Ladder: ladder,
+		  prop_Mode: mode,
+		  prop_Ethereal: ethereal
+		};
+		
+		const res = await fetch(API_CONFIG.MakeTraderieUrl, {
+		  method: 'POST',
+		  headers: { 'Content-Type': 'application/json' },
+		  body: JSON.stringify(payload)
+		});
+
+		const json = await res.json();
+
+		// ✅ 최소 5초 기다리기
+		const elapsed = Date.now() - startTime;
+		const remaining = 5000 - elapsed;
+		if (remaining > 0) {
+		  await new Promise(resolve => setTimeout(resolve, remaining));
+		}
+
+		// ✅ 로딩 박스 숨기고 결과 표시
+		loadingBox.style.display = 'none';
+		renderResults(json);  // ← 기존 결과 렌더링 함수 호출
+	}catch (error) {
+		console.error('❌ 오류 발생:', error);
+		alert('오류가 발생했습니다.');
+		loadingBox.style.display = 'none';
+	  }	
+  } else {
+    const itemSelect = document.getElementById('itemSelect');
+    const selectedItem = itemData.find(i => i.id == itemSelect.value);
+    if (!selectedItem) {
+      alert("⚠ 아이템이 선택되지 않았습니다. 다시 선택해주세요.");
+      return;
+    }
+    const optionInputs = document.querySelectorAll('.option-group, #materialOptionInputs');
+    const options = [];
+    optionInputs.forEach(el => {
+      const key = el.dataset.key || null;
+      const minInput = el.querySelector('.min');
+      const maxInput = el.querySelector('.max');
+      const min = minInput ? minInput.value : '';
+      const max = maxInput ? maxInput.value : '';
+      if (min || max) options.push({ key, min, max });
+    });
+    payload = {
+      ItemKinds: selectedKind,
+      ItemKey: selectedItem.id,
+      Options: options.map(opt => ({
+        key: Number(opt.key),
+        min: opt.min ? Number(opt.min) : null,
+        max: opt.max ? Number(opt.max) : null
+      })),
+      prop_Ladder: ladder,
+      prop_Mode: mode,
+      prop_Ethereal: ethereal
+    };
+  }
 
   const res = await fetch(API_CONFIG.MakeTraderieUrl, {
     method: 'POST',
@@ -180,94 +399,44 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
 
   const json = await res.json();
   document.getElementById('resultBox').style.display = 'block';
+	const tableBody = document.querySelector('#listingTable tbody');
+	tableBody.innerHTML = '';
+	let count = 1;
 
-  const tableBody = document.querySelector('#listingTable tbody');
-  tableBody.innerHTML = '';
+	if (Array.isArray(json.results)) {
+	  json.results.forEach(result => {
+		const itemMeta = selectedItems.find(i => i.id === result.itemKey);
 
-  (json.listings || []).forEach((listing, index) => {
-    const row = document.createElement('tr');
+		// 매물 있는 경우
+		if (result.listings && result.listings.length > 0) {
+		  result.listings.forEach(listing => {
+			const row = document.createElement('tr');
+			row.innerHTML = `
+			  <td>${count++}</td>
+			  <td>${itemMeta?.korName || itemMeta?.name || result.itemKey}</td>
+			  <td><img src="${itemMeta?.img || ''}" width="30"></td>
+			  <td>${listing.price}</td>
+			  <td>${listing.updated_at}</td>
+			  <td><a href="https://traderie.com/diablo2resurrected/listing/${listing.id}" target="_blank" style="color:#1a73e8;">확인</a></td>
+			`;
+			tableBody.appendChild(row);
+		  });
+		}
 
-    const numCell = document.createElement('td');
-    numCell.textContent = index + 1;
+		// 매물 없는 경우
+		else {
+		  const row = document.createElement('tr');
+		  row.innerHTML = `
+			<td>${count++}</td>
+			<td>${itemMeta?.korName || itemMeta?.name || result.itemKey}</td>
+			<td><img src="${itemMeta?.img || ''}" width="30"></td>
+			<td colspan="2" style="text-align: center; color: gray;">매물 없음</td>
+			<td><a href="${result.real_url}" target="_blank" style="color:#1a73e8;">확인</a></td>
+		  `;
+		  tableBody.appendChild(row);
+		}
+	  });
+	}
 
-    const priceCell = document.createElement('td');
-    priceCell.textContent = listing.price;
-
-    const dateCell = document.createElement('td');
-    dateCell.textContent = listing.updated_at;
-
-    const linkCell = document.createElement('td');
-    const link = document.createElement('a');
-    link.href = `https://traderie.com/diablo2resurrected/listing/${listing.id}`;
-    link.textContent = '확인';
-    link.target = '_blank';
-    link.style.color = '#1a73e8';
-
-    linkCell.appendChild(link);
-
-    row.appendChild(numCell);
-    row.appendChild(priceCell);
-    row.appendChild(dateCell);
-    row.appendChild(linkCell);
-
-    tableBody.appendChild(row);
-  });
 });
-
-function showItemOptions(item, kind) {
-  const container = document.getElementById('optionsContainer');
-  container.innerHTML = '';
-
-  const image = document.getElementById('itemImage');
-  if (item && item.img) {
-    image.src = item.img;
-    image.hidden = false;
-  } else {
-    image.hidden = true;
-  }
-
-  if (kind === 'unique' && item && Array.isArray(item.description_filtered) && item.description_filtered.length > 0) {
-    item.description_filtered.forEach(opt => {
-      const div = document.createElement('div');
-      div.className = 'option-group';
-      div.dataset.key = opt.property_id;
-
-      div.innerHTML = `
-        <label>${opt.property_kor}</label><br>
-        min: <input type="number" class="min" value="${opt.min ?? ''}"> 
-        max: <input type="number" class="max" value="${opt.max ?? ''}">
-      `;
-      container.appendChild(div);
-    });
-  } else if (kind === 'material') {
-    // 재료베이스 크롤링 필요
-  } else {
-    // 옵션이 없으면 비워두기
-  }
-}
-function formatOptionText(opt) {
-  if (!opt.koKR) return opt.name;
-
-  let formatted = opt.koKR;
-
-  // 임시 치환값 (사람이 알아보기 쉽게 예시 숫자 적용)
-  formatted = formatted
-    .replace(/%d/g, '10')
-    .replace(/%s/g, '스킬명')
-    .replace(/%%/g, '%'); // 실제 퍼센트 기호
-
-  return formatted;
-}
-
-async function loadOptionComboBox(optionJson) {
-  const combo = document.getElementById('optionCombo');
-  combo.innerHTML = '<option value="">옵션을 선택하세요</option>';
-
-  optionJson.forEach(opt => {
-    const option = document.createElement('option');
-    option.value = opt.id;
-    option.textContent = formatOptionText(opt);
-    combo.appendChild(option);
-  });
-}
 
