@@ -22,11 +22,20 @@ itemSearchInput.addEventListener('input', () => {
     option.textContent = item.korName || item.koKR || item.name;
     itemSelect.appendChild(option);
   });
-
+  
+  const optionsContainer = document.getElementById('optionsContainer'); // ✅ container 정의
+  
   if (filtered.length > 0) {
+	if (selectedKind === 'unique') {
+	  const notice = document.createElement('p');
+	  notice.textContent = '🛈 옵션을 제외하고 싶을 땐 빈값을 입력하세요';
+	  notice.style.color = 'gray';
+	  notice.style.marginBottom = '8px';
+	  optionsContainer.appendChild(notice);
+	}  
     showItemOptions(filtered[0], selectedKind);
   } else {
-    document.getElementById('optionsContainer').innerHTML = '';
+    optionsContainer.innerHTML = '';
     document.getElementById('itemImage').hidden = true;
   }
 });
@@ -200,11 +209,73 @@ function formatOptionText(opt) {
   if (!opt.koKR) return opt.name;
   return opt.koKR.replace(/%d/g, '10').replace(/%s/g, '스킬명').replace(/%%/g, '%');
 }
-
-// 옵션 표시
 function showItemOptions(item, kind) {
   const container = document.getElementById('optionsContainer');
   container.innerHTML = '';
+
+  const image = document.getElementById('itemImage');
+  if (item && item.img) {
+    image.src = item.img;
+    image.hidden = false;
+  } else {
+    image.hidden = true;
+  }
+
+  // 유니크 아이템에 한해 옵션 표시
+  if (kind === 'unique' && Array.isArray(item.description_filtered)) {
+    // 안내문구
+    const notice = document.createElement('p');
+    notice.textContent = '🛈 옵션을 제외하고 싶을 땐 빈값을 입력하세요';
+    notice.style.color = 'gray';
+    notice.style.marginBottom = '8px';
+    container.appendChild(notice);
+
+    item.description_filtered.forEach(opt => {
+      const div = document.createElement('div');
+      div.className = 'option-group';
+      div.dataset.key = opt.property_id;
+
+      const label = document.createElement('label');
+      label.textContent = opt.property_kor;
+
+      const minInput = document.createElement('input');
+      minInput.type = 'number';
+      minInput.className = 'min';
+      minInput.value = opt.min ?? '';
+      minInput.style.margin = '0 6px';
+      minInput.style.width = '60px';
+
+      const maxInput = document.createElement('input');
+      maxInput.type = 'number';
+      maxInput.className = 'max';
+      maxInput.value = opt.max ?? '';
+      maxInput.style.margin = '0 6px';
+      maxInput.style.width = '60px';
+
+      const clearBtn = document.createElement('button');
+      clearBtn.textContent = '삭제';
+      clearBtn.addEventListener('click', () => {
+        minInput.value = '';
+        maxInput.value = '';
+      });
+
+      div.appendChild(label);
+      div.appendChild(document.createTextNode(' min:'));
+      div.appendChild(minInput);
+      div.appendChild(document.createTextNode(' max:'));
+      div.appendChild(maxInput);
+      div.appendChild(clearBtn);
+
+      container.appendChild(div);
+    });
+  }
+}
+
+// 옵션 표시
+function showItemOptions_tmp(item, kind) {
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  
   const image = document.getElementById('itemImage');
   if (item && item.img) {
     image.src = item.img;
@@ -222,9 +293,26 @@ function showItemOptions(item, kind) {
         <label>${opt.property_kor}</label><br>
         min: <input type="number" class="min" value="${opt.min ?? ''}"> 
         max: <input type="number" class="max" value="${opt.max ?? ''}">
+		<button type="button" class="clearBtn" data-idx="${idx}">삭제</button>
       `;
       container.appendChild(div);
     });
+	// 삭제 버튼 이벤트: min/max 비우기
+    // 삭제 버튼 생성 및 직접 이벤트 연결
+    const btn = document.createElement('button');
+    btn.textContent = '삭제';
+    btn.className = 'clearBtn';
+    btn.style.marginLeft = '8px';
+    btn.addEventListener('click', () => {
+      const minInput = div.querySelector('.min');
+      const maxInput = div.querySelector('.max');
+      if (minInput) minInput.value = '';
+      if (maxInput) maxInput.value = '';
+    });
+
+    div.appendChild(btn);
+    container.appendChild(div);
+	
   }
 }
 
@@ -403,40 +491,75 @@ generateBtn.addEventListener('click', async () => {
 	tableBody.innerHTML = '';
 	let count = 1;
 
-	if (Array.isArray(json.results)) {
-	  json.results.forEach(result => {
-		const itemMeta = selectedItems.find(i => i.id === result.itemKey);
+	if (json.results) {
+		if (Array.isArray(json.results)) {
+		  json.results.forEach(result => {
+			const itemMeta = selectedItems.find(i => i.id === result.itemKey);
 
-		// 매물 있는 경우
-		if (result.listings && result.listings.length > 0) {
-		  result.listings.forEach(listing => {
-			const row = document.createElement('tr');
-			row.innerHTML = `
-			  <td>${count++}</td>
-			  <td>${itemMeta?.korName || itemMeta?.name || result.itemKey}</td>
-			  <td><img src="${itemMeta?.img || ''}" width="30"></td>
-			  <td>${listing.price}</td>
-			  <td>${listing.updated_at}</td>
-			  <td><a href="https://traderie.com/diablo2resurrected/listing/${listing.id}" target="_blank" style="color:#1a73e8;">확인</a></td>
-			`;
-			tableBody.appendChild(row);
+			// 매물 있는 경우
+			if (result.listings && result.listings.length > 0) {
+			  result.listings.forEach(listing => {
+				const row = document.createElement('tr');
+				row.innerHTML = `
+				  <td>${count++}</td>
+				  <td>${itemMeta?.korName || itemMeta?.name || result.itemKey}</td>
+				  <td><img src="${itemMeta?.img || ''}" width="30"></td>
+				  <td>${listing.price}</td>
+				  <td>${listing.updated_at}</td>
+				  <td><a href="https://traderie.com/diablo2resurrected/listing/${listing.id}" target="_blank" style="color:#1a73e8;">확인</a></td>
+				`;
+				tableBody.appendChild(row);
+			  });
+			}
+
+			// 매물 없는 경우
+			else {
+			  const row = document.createElement('tr');
+			  row.innerHTML = `
+				<td>${count++}</td>
+				<td>${itemMeta?.korName || itemMeta?.name || result.itemKey}</td>
+				<td><img src="${itemMeta?.img || ''}" width="30"></td>
+				<td colspan="2" style="text-align: center; color: gray;">매물 없음</td>
+				<td><a href="${result.real_url}" target="_blank" style="color:#1a73e8;">확인</a></td>
+			  `;
+			  tableBody.appendChild(row);
+			}
 		  });
 		}
-
-		// 매물 없는 경우
-		else {
+	}else{
+		// ✅ 최소 5초 대기 후 로딩 박스 숨기기
+		const elapsed = Date.now() - startTime;
+		const remaining = 5000 - elapsed;
+		if (remaining > 0) {
+		  await new Promise(resolve => setTimeout(resolve, remaining));
+		}
+		loadingBox.style.display = 'none';
+		// ✅ 유니크 등 단일 검색 결과 처리
+	  const selectedItem = itemData.find(i => i.id == document.getElementById('itemSelect').value);
+	  if (json.listings?.length > 0) {
+		json.listings.forEach(listing => {
 		  const row = document.createElement('tr');
 		  row.innerHTML = `
 			<td>${count++}</td>
-			<td>${itemMeta?.korName || itemMeta?.name || result.itemKey}</td>
-			<td><img src="${itemMeta?.img || ''}" width="30"></td>
-			<td colspan="2" style="text-align: center; color: gray;">매물 없음</td>
-			<td><a href="${result.real_url}" target="_blank" style="color:#1a73e8;">확인</a></td>
+			<td>${selectedItem?.korName || selectedItem?.name || selectedItem?.id}</td>
+			<td><img src="${selectedItem?.img || ''}" width="30"></td>
+			<td>${listing.price}</td>
+			<td>${listing.updated_at}</td>
+			<td><a href="https://traderie.com/diablo2resurrected/listing/${listing.id}" target="_blank" style="color:#1a73e8;">확인</a></td>
 		  `;
 		  tableBody.appendChild(row);
-		}
-	  });
+		});
+	  } else {
+		const row = document.createElement('tr');
+		row.innerHTML = `
+		  <td>${count++}</td>
+		  <td>${selectedItem?.korName || selectedItem?.name || selectedItem?.id}</td>
+		  <td><img src="${selectedItem?.img || ''}" width="30"></td>
+		  <td colspan="2" style="text-align: center; color: gray;">매물 없음</td>
+		  <td><a href="${json.real_url}" target="_blank" style="color:#1a73e8;">확인</a></td>
+		`;
+		tableBody.appendChild(row);
+	  }
 	}
-
 });
 
