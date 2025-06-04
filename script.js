@@ -504,7 +504,29 @@ generateBtn.addEventListener('click', async () => {
 				  <td>${count++}</td>
 				  <td>${itemMeta?.korName || itemMeta?.name || result.itemKey}</td>
 				  <td><img src="${itemMeta?.img || ''}" width="30"></td>
-				  <td>${listing.price}</td>
+				  <td>
+					  ${Array.isArray(listing.price_imgs)
+						? listing.price_imgs.map((imgGroup, gIdx) => {
+							const imgTags = imgGroup.map((img, i) => {
+							  const qty = listing.price_qtys?.[gIdx]?.[i] ?? 1;
+							  return `
+								<img src="${img}" width="20" style="vertical-align:middle;">
+								<span style="margin-right:6px;">x${qty}</span>
+							  `;
+							}).join('');
+
+							const text = listing.price_texts?.[gIdx] || '';
+
+							return `
+							  <div style="margin-bottom:6px;">
+								${imgTags}
+								<div style="font-size:12px; color:gray; margin-top:2px;">${text}</div>
+							  </div>
+							  ${gIdx < listing.price_imgs.length - 1 ? '<div style="text-align:center; font-size:12px; color:#aaa;">OR</div>' : ''}
+							`;
+						  }).join('')
+						: 'N/A'}
+				  </td>
 				  <td>${listing.updated_at}</td>
 				  <td><a href="https://traderie.com/diablo2resurrected/listing/${listing.id}" target="_blank" style="color:#1a73e8;">확인</a></td>
 				`;
@@ -540,13 +562,35 @@ generateBtn.addEventListener('click', async () => {
 		json.listings.forEach(listing => {
 		  const row = document.createElement('tr');
 		  row.innerHTML = `
-			<td>${count++}</td>
-			<td>${selectedItem?.korName || selectedItem?.name || selectedItem?.id}</td>
-			<td><img src="${selectedItem?.img || ''}" width="30"></td>
-			<td>${listing.price}</td>
-			<td>${listing.updated_at}</td>
-			<td><a href="https://traderie.com/diablo2resurrected/listing/${listing.id}" target="_blank" style="color:#1a73e8;">확인</a></td>
-		  `;
+			  <td>${count++}</td>
+			  <td>${selectedItem?.korName || selectedItem?.name || selectedItem?.id}</td>
+			  <td><img src="${selectedItem?.img || ''}" width="30"></td>
+			  <td>
+				  ${Array.isArray(listing.price_imgs)
+					? listing.price_imgs.map((imgGroup, gIdx) => {
+						const imgTags = imgGroup.map((img, i) => {
+						  const qty = listing.price_qtys?.[gIdx]?.[i] ?? 1;
+						  return `
+							<img src="${img}" width="20" style="vertical-align:middle;">
+							<span style="margin-right:6px;">x${qty}</span>
+						  `;
+						}).join('');
+
+						const text = listing.price_texts?.[gIdx] || '';
+
+						return `
+						  <div style="margin-bottom:6px;">
+							${imgTags}
+							<div style="font-size:12px; color:gray; margin-top:2px;">${text}</div>
+						  </div>
+						  ${gIdx < listing.price_imgs.length - 1 ? '<div style="text-align:center; font-size:12px; color:#aaa;">OR</div>' : ''}
+						`;
+					  }).join('')
+					: 'N/A'}
+			  </td>
+			  <td>${listing.updated_at}</td>
+			  <td><a href="https://traderie.com/diablo2resurrected/listing/${listing.id}" target="_blank" style="color:#1a73e8;">확인</a></td>
+			`;
 		  tableBody.appendChild(row);
 		});
 	  } else {
