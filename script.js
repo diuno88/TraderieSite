@@ -433,21 +433,27 @@ generateBtn.addEventListener('click', async () => {
 
 		const json = await res.json();
 
-		// ✅ 최소 5초 기다리기
-		const elapsed = Date.now() - startTime;
-		const remaining = 5000 - elapsed;
-		if (remaining > 0) {
-		  await new Promise(resolve => setTimeout(resolve, remaining));
-		}
-
-		// ✅ 로딩 박스 숨기고 결과 표시
-		loadingBox.style.display = 'none';
-		renderResults(json);  // ← 기존 결과 렌더링 함수 호출
+		
 	}catch (error) {
 		console.error('❌ 오류 발생:', error);
 		alert('오류가 발생했습니다.');
 		loadingBox.style.display = 'none';
-	  }	
+	}	
+	
+	
+	// ✅ 최소 5초 기다리기
+	const elapsed = Date.now() - startTime;
+	const remaining = 5000 - elapsed;
+	if (remaining > 0) {
+	  await new Promise(resolve => setTimeout(resolve, remaining));
+	}
+	try {
+	  loadingBox.style.display = 'none';
+	  renderResults(json);  // ✅ 이 부분에서 문제가 발생하면 에러 로그만 출력
+	} catch (renderError) {
+	  console.error('❌ 결과 렌더링 오류:', renderError);
+	  alert('결과 렌더링 중 오류가 발생했습니다.');
+	}
   } else {
     const itemSelect = document.getElementById('itemSelect');
     const selectedItem = itemData.find(i => i.id == itemSelect.value);
