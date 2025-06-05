@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ctgList.forEach(ctg => {
         const opt = document.createElement('option');
         opt.value = ctg.id;
-        opt.textContent = ctg.korName ? `${ctg.id} (${ctg.korName})` : ctg.id;
+        opt.textContent = ctg.korName ? `${ctg.korName} (${ctg.id})` : ctg.id;
         categorySelect.appendChild(opt);
       });
       if (ctgList.length > 0) categorySelect.dispatchEvent(new Event('change'));
