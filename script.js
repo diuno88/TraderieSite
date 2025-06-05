@@ -5,6 +5,48 @@ let selectedItems = [];
 let selectedOptions = [];
 let allOptionData = []; // ✅ 전체 옵션 저장
 
+// API 주소 입력/저장 관리
+const apiInput = document.getElementById('api-url-input');
+const saveApiBtn = document.getElementById('save-api-url');
+const resetApiBtn = document.getElementById('reset-api-url');
+const API_KEY = 'API_BASE_URL';
+
+function applyApiState() {
+  const savedUrl = localStorage.getItem(API_KEY);
+  if (savedUrl) {
+    apiInput.value = savedUrl;
+    apiInput.disabled = true;
+    saveApiBtn.disabled = true;
+    resetApiBtn.style.display = 'inline';
+  } else {
+    apiInput.disabled = false;
+    saveApiBtn.disabled = false;
+    resetApiBtn.style.display = 'none';
+  }
+}
+
+function saveApiUrl() {
+  const value = apiInput.value.trim();
+  if (!value) {
+    alert('API 주소를 입력해주세요.');
+    return;
+  }
+  localStorage.setItem(API_KEY, value);
+  applyApiState();
+}
+
+function resetApiUrl() {
+  localStorage.removeItem(API_KEY);
+  apiInput.value = '';
+  applyApiState();
+}
+
+saveApiBtn.addEventListener('click', saveApiUrl);
+resetApiBtn.addEventListener('click', resetApiUrl);
+
+// 초기 상태 반영
+applyApiState();
+
 
 // 🔍 아이템 검색 입력
 const itemSearchInput = document.getElementById('itemSearchInput');
