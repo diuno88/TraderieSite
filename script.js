@@ -23,6 +23,7 @@ function applyApiState() {
     saveApiBtn.disabled = false;
     resetApiBtn.style.display = 'none';
   }
+  
 }
 
 function saveApiUrl() {
@@ -33,12 +34,14 @@ function saveApiUrl() {
   }
   localStorage.setItem(API_KEY, value);
   applyApiState();
+  location.reload();
 }
 
 function resetApiUrl() {
   localStorage.removeItem(API_KEY);
   apiInput.value = '';
   applyApiState();
+  location.reload();
 }
 
 saveApiBtn.addEventListener('click', saveApiUrl);
@@ -391,26 +394,95 @@ function removeSelectedItem(index) {
 
 // 옵션 선택
 const optionCombo = document.getElementById('optionCombo');
+
 optionCombo.addEventListener('change', () => {
   if (!['material', 'magic', 'rare'].includes(selectedKind)) return;
   const selectedId = optionCombo.value;
-  const selectedText = optionCombo.options[optionCombo.selectedIndex].text;
+  const selectedMeta = allOptionData.find(opt => opt.id == selectedId);
   if (!selectedId || selectedOptions.find(opt => opt.key == selectedId)) return;
-  selectedOptions.push({ key: selectedId, min: '', max: '', label: selectedText });
+
+  if (selectedMeta?.global) {
+    selectedOptions.push({ key: selectedId, label: formatOptionText(selectedMeta), checked: false });
+  } else {
+    selectedOptions.push({ key: selectedId, min: '', max: '', label: formatOptionText(selectedMeta) });
+  }
   renderSelectedOptions();
 });
 
 function renderSelectedOptions() {
   const list = document.getElementById('optionList');
   list.innerHTML = '';
+
   selectedOptions.forEach((opt, idx) => {
+    const optionMeta = allOptionData.find(o => o.id == opt.key);
     const li = document.createElement('li');
-    li.innerHTML = `
-      ${opt.label}
-      min: <input type="number" class="optMin" data-idx="${idx}" value="${opt.min}" style="width:50px;">
-      max: <input type="number" class="optMax" data-idx="${idx}" value="${opt.max}" style="width:50px;">
-      <button onclick="removeOption(${idx})">삭제</button>
-    `;
+
+    li.innerHTML = '';
+
+    // 옵션명
+    const label = document.createElement('span');
+    label.textContent = opt.label;
+    li.appendChild(label);
+
+    if (optionMeta?.global) {
+      // ✅ global 옵션은 체크박스 처리
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'global-checkbox';
+      checkbox.style.marginLeft = '10px';
+      checkbox.checked = !!opt.checked;
+
+      const status = document.createElement('span');
+      status.textContent = checkbox.checked ? '적용' : '미적용';
+      status.style.marginLeft = '6px';
+
+      checkbox.addEventListener('change', () => {
+        opt.checked = checkbox.checked;
+        status.textContent = checkbox.checked ? '적용' : '미적용';
+      });
+
+      li.appendChild(checkbox);
+      li.appendChild(status);
+    } else {
+      // ✅ 일반 옵션은 min/max 입력
+      const minInput = document.createElement('input');
+      minInput.type = 'number';
+      minInput.className = 'optMin';
+      minInput.dataset.idx = idx;
+      minInput.value = opt.min;
+      minInput.style.marginLeft = '10px';
+      minInput.style.width = '50px';
+
+      const maxInput = document.createElement('input');
+      maxInput.type = 'number';
+      maxInput.className = 'optMax';
+      maxInput.dataset.idx = idx;
+      maxInput.value = opt.max;
+      maxInput.style.marginLeft = '6px';
+      maxInput.style.width = '50px';
+
+      minInput.addEventListener('input', e => {
+        selectedOptions[idx].min = e.target.value;
+      });
+      maxInput.addEventListener('input', e => {
+        selectedOptions[idx].max = e.target.value;
+      });
+
+      li.appendChild(document.createTextNode(' min:'));
+      li.appendChild(minInput);
+      li.appendChild(document.createTextNode(' max:'));
+      li.appendChild(maxInput);
+    }
+
+    // 삭제 버튼
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '삭제';
+    deleteBtn.style.marginLeft = '10px';
+    deleteBtn.addEventListener('click', () => {
+      removeOption(idx);
+    });
+
+    li.appendChild(deleteBtn);
     list.appendChild(li);
   });
   document.querySelectorAll('.optMin').forEach(input => {
@@ -426,6 +498,9 @@ function renderSelectedOptions() {
     });
   });
 }
+
+
+
 
 function removeOption(index) {
   selectedOptions.splice(index, 1);
@@ -446,57 +521,41 @@ generateBtn.addEventListener('click', async () => {
   let payload;
 
   if (['material', 'magic', 'rare'].includes(selectedKind)) {
-    if (selectedItems.length === 0) {
-      alert("⚠ 아이템을 하나 이상 추가해주세요.");
-      return;
+  if (selectedItems.length === 0) {
+    alert("⚠ 아이템을 하나 이상 추가해주세요.");
+    return;
+  }
+
+  payload = {
+    items: selectedItems.map(item => ({
+      kind: selectedKind,
+      itemKey: item.id,
+      img: item.img
+    })),
+    options: [],
+    prop_Ladder: ladder,
+    prop_Mode: mode,
+    prop_Ethereal: ethereal
+  };
+
+  // 옵션 처리
+  selectedOptions.forEach(opt => {
+    const optMeta = allOptionData.find(o => o.id == opt.key);
+    if (optMeta?.global) {
+      if (opt.checked) {
+        const keyName = `prop_${optMeta.name}`;
+        payload[keyName] = true;
+      }
+    } else {
+      payload.options.push({
+        key: Number(opt.key),
+        min: opt.min ? Number(opt.min) : null,
+        max: opt.max ? Number(opt.max) : null
+      });
     }
-	try{
-		payload = {
-		  items: selectedItems.map(item => ({
-			kind: selectedKind,
-			itemKey: item.id,
-			img: item.img
-		  })),
-		  options: selectedOptions.map(opt => ({
-			key: Number(opt.key),
-			min: opt.min ? Number(opt.min) : null,
-			max: opt.max ? Number(opt.max) : null
-		  })),
-		  prop_Ladder: ladder,
-		  prop_Mode: mode,
-		  prop_Ethereal: ethereal
-		};
-		
-		const res = await fetch(API_CONFIG.MakeTraderieUrl, {
-		  method: 'POST',
-		  headers: { 'Content-Type': 'application/json' },
-		  body: JSON.stringify(payload)
-		});
+  });
 
-		const json = await res.json();
-
-		
-	}catch (error) {
-		console.error('❌ 오류 발생:', error);
-		alert('오류가 발생했습니다.');
-		loadingBox.style.display = 'none';
-	}	
-	
-	
-	// ✅ 최소 5초 기다리기
-	const elapsed = Date.now() - startTime;
-	const remaining = 5000 - elapsed;
-	if (remaining > 0) {
-	  await new Promise(resolve => setTimeout(resolve, remaining));
-	}
-	try {
-	  loadingBox.style.display = 'none';
-	  renderResults(json);  // ✅ 이 부분에서 문제가 발생하면 에러 로그만 출력
-	} catch (renderError) {
-	  console.error('❌ 결과 렌더링 오류:', renderError);
-	  alert('결과 렌더링 중 오류가 발생했습니다.');
-	}
-  } else {
+} else {
     const itemSelect = document.getElementById('itemSelect');
     const selectedItem = itemData.find(i => i.id == itemSelect.value);
     if (!selectedItem) {
@@ -654,4 +713,3 @@ generateBtn.addEventListener('click', async () => {
 	  }
 	}
 });
-
