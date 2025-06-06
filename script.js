@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const categorySelect = document.getElementById('categorySelect');
   const optionCombo = document.getElementById('optionCombo');
   const optionSearchInput= document.getElementById('optionSearchInput');
-
+  const wrapper = document.getElementById("youtubeIframeWrapper");
   const defaultOption = document.createElement('option');
   defaultOption.value = '';
   defaultOption.textContent = '- 선택하세요 -';
@@ -111,6 +111,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     option.textContent = kind.name.name;
     kindSelect.appendChild(option);
   });
+   try {  
+   const randomVideo = data.random_video;
+  //✅ random_video 처리
+  if (randomVideo && randomVideo.videoId) {
+	  const iframe = createYouTubeIframe(randomVideo.videoId, randomVideo.title);
+	  wrapper.appendChild(iframe);
+  }
+	// ✅ fallback: 랜덤 영상이 없거나 iframe이 추가되지 않은 경우
+	if (wrapper.children.length === 0) {
+	  const fallbackVideoId = "dQw4w9WgXcQ";  // 고정 영상 ID
+	  const iframe = createYouTubeIframe(fallbackVideoId, "노랑홍당무 채널 대표 영상");
+	  wrapper.appendChild(iframe);
+}
+
+// 🎯 기존 itemKinds 렌더링 등
+renderItemKinds(data.itemKinds);
+
+
+  } catch (error) {
+    console.error("초기 데이터 로딩 실패:", error);
+  }
+  // 공통 iframe 생성 함수
+  function createYouTubeIframe(videoId, title) {
+    const iframe = document.createElement("iframe");
+    iframe.width = "320";
+    iframe.height = "180";
+    iframe.src = `https://www.youtube.com/embed/${videoId}`;
+    iframe.title = title || "YouTube video player";
+    iframe.frameBorder = "0";
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    iframe.allowFullscreen = true;
+    return iframe;
+  }
+ 
   optionSearchInput.addEventListener('input', () => {
 	const keyword = document.getElementById('optionSearchInput').value.trim();
 	const filtered = allOptionData.filter(opt => {
@@ -127,6 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('selectedItemsWrapper').style.display = showExtras ? 'block' : 'none';
     document.getElementById('selectedOptionsWrapper').style.display = showExtras ? 'block' : 'none';
     document.getElementById('addItemBtn').style.display = showExtras ? 'inline-block' : 'none';
+	document.getElementById('bulkControls').style.display = showExtras ? 'block' : 'none';
 
     if (showExtras) {
       selectedItems = [];
@@ -233,6 +268,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 	  document.querySelector('#listingTable tbody').innerHTML = '';
 	});
 
+});
+
+
+document.getElementById('bulkAddBtn').addEventListener('click', () => {
+  const newlyAdded = itemData.filter(item =>
+    !selectedItems.find(sel => sel.id === item.id)
+  );
+  selectedItems = selectedItems.concat(newlyAdded);
+  renderSelectedItems();
+});
+
+document.getElementById('bulkRemoveBtn').addEventListener('click', () => {
+  selectedItems = [];
+  renderSelectedItems();
 });
 
 // 옵션 콤보박스 로딩
@@ -656,14 +705,7 @@ generateBtn.addEventListener('click', async () => {
 		  });
 		}
 	}else{
-		// ✅ 최소 5초 대기 후 로딩 박스 숨기기
-		const elapsed = Date.now() - startTime;
-		const remaining = 5000 - elapsed;
-		if (remaining > 0) {
-		  await new Promise(resolve => setTimeout(resolve, remaining));
-		}
-		loadingBox.style.display = 'none';
-		// ✅ 유니크 등 단일 검색 결과 처리
+		
 	  const selectedItem = itemData.find(i => i.id == document.getElementById('itemSelect').value);
 	  if (json.listings?.length > 0) {
 		json.listings.forEach(listing => {
@@ -712,4 +754,12 @@ generateBtn.addEventListener('click', async () => {
 		tableBody.appendChild(row);
 	  }
 	}
+	// ✅ 최소 5초 대기 후 로딩 박스 숨기기
+	const elapsed = Date.now() - startTime;
+	const remaining = 5000 - elapsed;
+	if (remaining > 0) {
+	  await new Promise(resolve => setTimeout(resolve, remaining));
+	}
+	loadingBox.style.display = 'none';
+	// ✅ 유니크 등 단일 검색 결과 처리
 });
