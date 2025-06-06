@@ -12,9 +12,15 @@ const resetApiBtn = document.getElementById('reset-api-url');
 const API_KEY = 'API_BASE_URL';
 
 function applyApiState() {
-  const savedUrl = localStorage.getItem(API_KEY);
-  if (savedUrl) {
-    apiInput.value = savedUrl;
+	
+  //const savedUrl = localStorage.getItem(API_KEY);
+    apiInput.value = BASE;
+    apiInput.disabled = false;
+    saveApiBtn.disabled = false;
+    resetApiBtn.style.display = 'inline';
+
+  /*if (savedUrl) {
+    apiInput.value = BASE;
     apiInput.disabled = true;
     saveApiBtn.disabled = true;
     resetApiBtn.style.display = 'inline';
@@ -22,7 +28,7 @@ function applyApiState() {
     apiInput.disabled = false;
     saveApiBtn.disabled = false;
     resetApiBtn.style.display = 'none';
-  }
+  }*/
   
 }
 
@@ -126,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 }
 
 // 🎯 기존 itemKinds 렌더링 등
-renderItemKinds(data.itemKinds);
+//renderItemKinds(data.itemKinds);
 
 
   } catch (error) {
