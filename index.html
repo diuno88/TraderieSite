@@ -2,111 +2,127 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  
-  <title>트레더리 Diablo2 일괄검색 </title>
-<!-- 🔧 API 서버 설정 -->
-<div style="margin-bottom: 12px;">
-  <label for="api-url-input"><strong>API 서버 주소:</strong></label>
-  <input type="text" id="api-url-input" placeholder="http://localhost:8000" style="width: 250px;">
-  <button id="save-api-url">저장</button>
-  <button id="reset-api-url" style="display: none;">초기화</button>
-</div>
+  <title>트레더리 Diablo2 일괄검색</title>
 
-  <button id="resetBtn" style="margin-bottom: 10px;">🔄 전체 초기화</button>
   <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
   <script src="script.js" defer></script>
 </head>
+
 <body>
-  <h2>트레더리 Diablo2검색 링크생성</h2>
+  <div id="mainLayout">
 
-  <!-- 아이템 종류 선택 -->
-  <!-- 아이템 종류 -->
-  <label>아이템 종류:</label>
-  <select id="itemKindSelect" style="margin-bottom: 8px;"></select>
-  <!-- 아이템 이름 -->
-  <label for="itemSearchInput" style="display: inline-block; margin-right: 8px;">아이템 이름:</label>
-  <input type="text" id="itemSearchInput" placeholder="아이템명 입력" style="width: 200px;">
-  <br>
-  <div class="row" id="categoryWrapper" style="display: none;">
-    <label for="categorySelect">카테고리:</label>
-    <select id="categorySelect"></select>
+    <!-- 🔼 상단: 입력 / 결과 영역 -->
+    <div id="topSection">
+      <div id="inputSection">
+        <h2>트레더리 Diablo2 검색 링크 생성</h2>
+
+        <!-- API 설정 -->
+        <div style="margin-bottom: 12px;">
+          <label for="api-url-input"><strong>API 서버 주소:</strong></label>
+          <input type="text" id="api-url-input" placeholder="http://localhost:8000" style="width: 250px;">
+          <button id="save-api-url">저장</button>
+          <button id="reset-api-url" style="display: none;">초기화</button>
+        </div>
+
+        <button id="resetBtn" style="margin-bottom: 10px;">🔄 전체 초기화</button>
+
+        <!-- 아이템 종류/이름 -->
+        <label>아이템 종류:</label>
+        <select id="itemKindSelect" style="margin-bottom: 8px;"></select>
+
+        <label for="itemSearchInput">아이템 이름:</label>
+        <input type="text" id="itemSearchInput" placeholder="아이템명 입력" style="width: 200px;">
+
+        <div class="row" id="categoryWrapper" style="display: none;">
+          <label for="categorySelect">카테고리:</label>
+          <select id="categorySelect"></select>
+        </div>
+
+        <div class="row">
+          <label for="itemSelect">아이템 목록:</label>
+          <select id="itemSelect"></select>
+          <button id="addItemBtn" style="display: none; margin-left: 8px;">추가</button>
+          <img id="itemImage" src="" alt="아이템 이미지" hidden>
+        </div>
+        <div id="bulkControls" style="margin-top: 8px; display: none;">
+          <button id="bulkAddBtn">➕ 일괄 추가</button>
+          <button id="bulkRemoveBtn">🗑 일괄 삭제</button>
+        </div>
+        <div id="selectedItemsWrapper" style="display: none; margin-top: 16px; border: 1px solid #ccc; padding: 8px; max-height: 200px; overflow-y: auto;">
+          <strong>선택된 아이템:</strong>
+          <ul id="itemList"></ul>
+        </div>
+
+        <!-- 옵션 선택 -->
+        <div class="row">
+          <input type="text" id="optionSearchInput" placeholder="옵션 검색" style="margin-top: 8px; width: 200px;">
+          <label for="optionCombo">옵션 선택:</label>
+          <select id="optionCombo">
+            <option value="">옵션을 선택하세요</option>
+          </select>
+        </div>
+
+        <div id="selectedOptionsWrapper" style="display: none; margin-top: 16px; border: 1px solid #ccc; padding: 8px; max-height: 200px; overflow-y: auto;">
+          <strong>선택된 옵션:</strong>
+          <ul id="optionList"></ul>
+        </div>
+
+        <!-- 서버 조건 -->
+        <label>서버 종류 (래더 여부):</label>
+        <select id="ladderSelect">
+          <option value="true">래더</option>
+          <option value="false">스탠</option>
+        </select>
+
+        <label>게임 모드:</label>
+        <select id="modeSelect">
+          <option value="softcore">소프트코어</option>
+          <option value="hardcore">하드코어</option>
+        </select>
+
+        <label>
+          <input type="checkbox" id="etherealCheck">
+          에테리얼만 보기
+        </label>
+
+        <div id="optionsContainer"></div>
+
+        <!-- 실행 버튼 -->
+        <button id="generateBtn" style="margin-top: 10px;">검색하기</button>
+      </div>
+
+      <div id="resultSection">
+        <div class="result-box" id="resultBox" style="display:none;">
+          <table id="listingTable">
+            <thead>
+              <tr>
+                <th>순번</th>
+                <th>아이템명</th>
+                <th>이미지</th>
+                <th>가격</th>
+                <th>등록일시</th>
+                <th>트레더리확인</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div id="loadingBox" style="display: none; text-align: center; margin-top: 20px;">
+          <img src="images/loading.gif" alt="로딩 중..." style="width: 48px; height: 48px;">
+          <p>트레더리 확인 중입니다...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔽 하단: 유튜브 광고 -->
+    <div id="youtubeAdContainer" style="background-color: #f0f0f0; padding: 16px; text-align: center; border-top: 1px solid #ccc;">
+      <p><strong>📺 노랑홍당무 유투브 채널 구독많이해주세요!</strong></p>
+      <a href="https://www.youtube.com/@diuno88" target="_blank" style="color: blue; text-decoration: underline;">👉 유튜브 채널 바로가기</a>
+      <div id="youtubeIframeWrapper" style="margin-top: 10px;"></div>
+    </div>
+
   </div>
-
-  <div class="row">
-    <label for="itemSelect">아이템 목록:</label>
-    <select id="itemSelect"></select>
-    <button id="addItemBtn" style="display: none; margin-left: 8px;">추가</button>
-    <img id="itemImage" src="" alt="아이템 이미지" hidden>
-  </div>
-
-  <!-- 선택된 아이템 리스트 출력 -->
-  <div id="selectedItemsWrapper" style="display: none; margin-top: 16px; border: 1px solid #ccc; padding: 8px;">
-    <strong>선택된 아이템:</strong>
-    <ul id="itemList"></ul>
-  </div>
-
-  <!-- 옵션 선택 드롭다운 -->
-  <div class="row" style="margin-top: 12px;">
-  <!-- 옵션 검색 입력창 -->
-	<input type="text" id="optionSearchInput" placeholder="옵션 검색" style="margin-top: 8px; width: 200px;">
-
-    <label for="optionCombo">옵션 선택:</label>
-    <select id="optionCombo">
-      <option value="">옵션을 선택하세요</option>
-    </select>
-  </div>
-
-  <!-- 선택된 옵션 리스트 출력 -->
-  <div id="selectedOptionsWrapper" style="display: none; margin-top: 16px; border: 1px solid #ccc; padding: 8px;">
-    <strong>선택된 옵션:</strong>
-    <ul id="optionList"></ul>
-  </div>
-
-  <!-- 서버 종류, 게임 모드, 에테리얼 -->
-  <label>서버 종류 (래더 여부):</label>
-  <select id="ladderSelect">
-    <option value="true">래더</option>
-    <option value="false">스탠</option>
-  </select>
-
-  <label>게임 모드:</label>
-  <select id="modeSelect">
-    <option value="softcore">소프트코어</option>
-    <option value="hardcore">하드코어</option>
-  </select>
-
-  <label>
-    <input type="checkbox" id="etherealCheck">
-    에테리얼만 보기
-  </label>
-
-  <!-- 고정형 옵션 입력 필드 -->
-  <div id="optionsContainer"></div>
-
-  <!-- URL 생성 버튼 -->
-  <button id="generateBtn">검색하기</button>
-
-  <!-- 결과 영역 -->
-  <div class="result-box" id="resultBox" style="display:none;">
-    <table id="listingTable" border="1" cellpadding="6" style="margin-top: 12px; border-collapse: collapse;">
-      <thead>
-        <tr>
-		  <th>순번</th>
-		  <th>아이템명</th>
-		  <th>이미지</th>
-		  <th>가격</th>
-		  <th>등록일시</th>
-		  <th>트레더리확인</th>
-		</tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <!-- 로딩 박스 (gif + 텍스트) -->
-	<div id="loadingBox" style="display: none; text-align: center; margin-top: 20px;">
-	  <img src="images/loading.gif" alt="로딩 중..." style="width: 48px; height: 48px;">
-	  <p>트레더리 확인 중입니다...</p>
-	</div>
 </body>
 </html>
