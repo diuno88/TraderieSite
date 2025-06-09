@@ -335,11 +335,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 공통 iframe 생성 함수
   function createYouTubeIframe(videoId, title) {
     const iframe = document.createElement("iframe");
-    iframe.width = "320";
-    iframe.height = "180";
+    //iframe.width = "320";
+    //iframe.height = "180";
+	 // ✅ 전체 채우기 스타일
+	//iframe.style.width = "100%";
+	//iframe.style.height = "100%";
+	//iframe.style.border = "none";
     iframe.src = `https://www.youtube.com/embed/${videoId}`;
     iframe.title = title || "YouTube video player";
-    iframe.frameBorder = "0";
+    //iframe.frameBorder = "0";
     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
     iframe.allowFullscreen = true;
     return iframe;
