@@ -4,6 +4,8 @@ let selectedKind = "";
 let selectedItems = [];
 let selectedOptions = [];
 let allOptionData = []; // ✅ 전체 옵션 저장
+let runewordCategoryData = [];  // ✅ /ItemList에서 받은 category 정보 저장
+
 
 // API 주소 입력/저장 관리
 const apiInput = document.getElementById('api-url-input');
@@ -31,6 +33,104 @@ function applyApiState() {
   }*/
   
 }
+function renderRunewordTypeCheckboxCombo(selectedItem, categoryData) {
+	console.log('renderRunewordTypeCheckboxCombo');
+  const wrapper = document.getElementById('runewordTypeComboWrapper');
+  wrapper.innerHTML = '';
+  wrapper.style.display = 'block';
+
+  // ✅ type에서 모든 type을 eng(lowercase)로 추출 (string or object)
+	const simplifiedTypes = (selectedItem.type || []).map(t => {
+	  if (typeof t === 'string') {
+		return t.split('(')[0].trim().toLowerCase();  // 예전 포맷 호환
+	  } else if (typeof t === 'object' && t.eng) {
+		return t.eng.toLowerCase();
+	  } else if (typeof t === 'object' && t.ctg) {
+		return t.ctg.toLowerCase();  // 안전망
+	  }
+	  return '';
+	});
+
+  // ✅ categoryData에서 해당 group 또는 ctg가 매칭되는 항목 필터링
+  const matchedCategories = categoryData.filter(cat =>
+    simplifiedTypes.includes(cat.group?.toLowerCase()) || simplifiedTypes.includes(cat.ctg?.toLowerCase())
+  );
+
+  // 콤보박스 UI 생성
+  const comboContainer = document.createElement('div');
+  comboContainer.style.position = 'relative';
+  comboContainer.style.display = 'inline-block';
+  comboContainer.style.minWidth = '300px';
+
+  const comboButton = document.createElement('button');
+  comboButton.textContent = '아이템 타입 선택';
+  comboButton.style.width = '100%';
+  comboButton.style.padding = '6px';
+  comboButton.style.cursor = 'pointer';
+
+  const dropdown = document.createElement('div');
+  dropdown.style.position = 'absolute';
+  dropdown.style.top = '100%';
+  dropdown.style.left = '0';
+  dropdown.style.zIndex = '1000';
+  dropdown.style.background = 'white';
+  dropdown.style.border = '1px solid #ccc';
+  dropdown.style.padding = '8px';
+  dropdown.style.maxHeight = '200px';
+  dropdown.style.overflowY = 'auto';
+  dropdown.style.display = 'none';
+  dropdown.style.minWidth = '300px';
+
+  // 전체 선택 / 해제 버튼
+  const selectAllBtn = document.createElement('button');
+  selectAllBtn.textContent = '전체 선택';
+  selectAllBtn.style.marginRight = '6px';
+  selectAllBtn.addEventListener('click', () => {
+    dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+  });
+
+  const clearAllBtn = document.createElement('button');
+  clearAllBtn.textContent = '선택 해제';
+  clearAllBtn.addEventListener('click', () => {
+    dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  });
+
+  dropdown.appendChild(selectAllBtn);
+  dropdown.appendChild(clearAllBtn);
+  dropdown.appendChild(document.createElement('hr'));
+
+  // ✅ 체크박스 렌더링
+  matchedCategories.forEach(cat => {
+    const label = document.createElement('label');
+    label.style.display = 'block';
+    label.style.margin = '4px 0';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'runewordCategory';
+    checkbox.value = cat.id;
+
+    // 자동 선택 기준: sockets 일치 + type 일치
+    const isSameSocket = selectedItem.sockets === cat.sockets;
+    const isSameType = simplifiedTypes.includes((cat.group || cat.ctg || '').toLowerCase());
+
+    checkbox.checked = isSameSocket && isSameType;
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(` ${cat.korName || cat.name}`));
+    dropdown.appendChild(label);
+  });
+
+  comboButton.addEventListener('click', () => {
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+  });
+
+  comboContainer.appendChild(comboButton);
+  comboContainer.appendChild(dropdown);
+  wrapper.appendChild(comboContainer);
+}
+
+
 
 function saveApiUrl() {
   const value = apiInput.value.trim();
@@ -56,6 +156,84 @@ resetApiBtn.addEventListener('click', resetApiUrl);
 // 초기 상태 반영
 applyApiState();
 
+//옵션 내용 초기화 
+function resetRunewordOptionsUI() {
+  document.getElementById('optionsContainer').innerHTML = '';
+  document.getElementById('runewordOptionInputs').innerHTML = '';
+  selectedRunewordOptions = [];
+}
+
+async function handleRunewordSelection(itemRes) {
+  const itemDataRes = await itemRes.json();
+  itemData = itemDataRes.items || [];
+  optionData= itemDataRes.options || [];
+  runewordCategoryData = itemDataRes.category || [];
+  //전역변수에 옵션리스트를 저장한다.
+  loadOptionComboBox(optionData);
+
+  const runewordCategoryWrapper = document.getElementById('runewordTypeComboWrapper');
+  const optionCombo = document.getElementById('optionCombo');
+  const itemSelect = document.getElementById('itemSelect');
+
+  // 기존 categoryWrapper는 룬워드에서는 사용하지 않음!
+  const categoryWrapper = document.getElementById('categoryWrapper');
+  if (categoryWrapper) categoryWrapper.style.display = 'none';
+
+  // 룬워드 관련 UI 표시
+  itemSelect.style.display = 'block';
+  optionCombo.style.display = 'block';
+  runewordCategoryWrapper.style.display = 'block';
+
+  // 아이템 목록 렌더링
+  itemSelect.innerHTML = '';
+  itemData.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.korName || item.name;
+    itemSelect.appendChild(opt);
+  });
+  
+  // 아이템 목록 렌더링
+  optionCombo.innerHTML = '';
+  optionData.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.koKR;
+    optionCombo.appendChild(opt);
+  });
+
+  if (itemData.length > 0) {
+    itemSelect.dispatchEvent(new Event('change'));
+  }
+  if (optionData.length > 0) {
+    optionCombo.dispatchEvent(new Event('change'));
+  }
+}
+
+
+
+function renderRunewordCategoryCombo(categoryList) {
+  const container = document.getElementById('runewordCategoryWrapper');
+  container.innerHTML = '';
+
+  categoryList.forEach(cat => {
+    const label = document.createElement('label');
+    label.style.marginRight = '12px';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'runewordCategory';
+    checkbox.value = cat.id;
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(` ${cat.korName || cat.name}`));
+    container.appendChild(label);
+  });
+
+  container.style.display = 'block';
+}
+
+
 
 // 🔍 아이템 검색 입력
 const itemSearchInput = document.getElementById('itemSearchInput');
@@ -75,20 +253,29 @@ itemSearchInput.addEventListener('input', () => {
   });
   
   const optionsContainer = document.getElementById('optionsContainer'); // ✅ container 정의
-  
-  if (filtered.length > 0) {
-	if (selectedKind === 'unique') {
-	  const notice = document.createElement('p');
-	  notice.textContent = '🛈 옵션을 제외하고 싶을 땐 빈값을 입력하세요';
-	  notice.style.color = 'gray';
-	  notice.style.marginBottom = '8px';
-	  optionsContainer.appendChild(notice);
-	}  
-    showItemOptions(filtered[0], selectedKind);
-  } else {
-    optionsContainer.innerHTML = '';
-    document.getElementById('itemImage').hidden = true;
-  }
+	if (filtered.length > 0) {
+		const selectedItem = filtered[0];
+		itemSelect.value = selectedItem.id;
+		itemSelect.dispatchEvent(new Event('change'));
+		
+				// ✅ 여기 추가
+		if (selectedKind === 'runwords') {
+		  renderRunewordTypeCheckboxCombo(selectedItem, runewordCategoryData);
+		}
+	  
+		if (['unique', 'runwords'].includes(selectedKind)) {
+		  const notice = document.createElement('p');
+		  notice.textContent = '🛈 옵션을 제외하고 싶을 땐 빈값을 입력하세요';
+		  notice.style.color = 'gray';
+		  notice.style.marginBottom = '8px';
+		  optionsContainer.appendChild(notice);
+		}  
+	} else {
+		optionsContainer.innerHTML = '';
+		document.getElementById('itemImage').hidden = true;
+	}
+	
+	
 });
 
 // 초기 로딩
@@ -160,10 +347,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 	renderOptionCombo(filtered);
   });
   kindSelect.addEventListener('change', async () => {
+	resetRunewordOptionsUI(); // ← 추가
     selectedKind = kindSelect.value;
 
     // 선택에 따라 UI 컨트롤 표시 여부 조절
     const showExtras = ['material', 'magic', 'rare'].includes(selectedKind);
+	const isRuneword = selectedKind === 'runwords';
     document.getElementById('selectedItemsWrapper').style.display = showExtras ? 'block' : 'none';
     document.getElementById('selectedOptionsWrapper').style.display = showExtras ? 'block' : 'none';
     document.getElementById('addItemBtn').style.display = showExtras ? 'inline-block' : 'none';
@@ -190,13 +379,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (ctgData.options) loadOptionComboBox(ctgData.options);
       categorySelect.innerHTML = '';
       ctgList.forEach(ctg => {
-        const opt = document.createElement('option');
-        opt.value = ctg.id;
-        opt.textContent = ctg.korName ? `${ctg.korName} (${ctg.id})` : ctg.id;
-        categorySelect.appendChild(opt);
-      });
+		const opt = document.createElement('option');
+		opt.value = ctg.id || ctg.eng;  // value는 eng나 id
+		const kor = ctg.korName || ctg.kor;
+		const eng = ctg.id || ctg.eng;
+		opt.textContent = kor ? `${kor} (${eng})` : eng;
+		categorySelect.appendChild(opt);
+	  });
       if (ctgList.length > 0) categorySelect.dispatchEvent(new Event('change'));
-    } else {
+    }
+	else if (isRuneword) {
+		await handleRunewordSelection(itemRes);  // 🔥 이 함수를 따로 만듦
+		
+		
+		
+		
+	}else {
       categoryWrapper.style.display = 'none';
       optionCombo.style.display = 'none';
       const itemDataRes = await itemRes.json();
@@ -218,6 +416,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   categorySelect.addEventListener('change', async () => {
+	resetRunewordOptionsUI(); // ← 추가
     const ctg = categorySelect.value;
     const url = `${API_CONFIG.selectCategories}?kind=${encodeURIComponent(selectedKind)}&ctg=${encodeURIComponent(ctg)}`;
     const ctgRes = await fetch(url);
@@ -237,11 +436,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('itemImage').hidden = true;
     }
   });
+  
+  
+  // 룬워드 선택 시 type 체크박스 표시
+	itemSelect.addEventListener('change', () => {
+		resetRunewordOptionsUI(); // ← 추가
+		const selectedItem = itemData.find(i => i.id == itemSelect.value);
+		if (!selectedItem) return;
 
-  itemSelect.addEventListener('change', () => {
-    const selectedItem = itemData.find(i => i.id == itemSelect.value);
-    showItemOptions(selectedItem, selectedKind);
-  });
+		showItemOptions(selectedItem, selectedKind);
+
+		if (selectedKind === 'runwords') {
+		  document.getElementById('runewordTypeComboWrapper').style.display = 'block';
+		renderRunewordTypeCheckboxCombo(selectedItem, runewordCategoryData);
+		} else {
+		  document.getElementById('runewordCategoryWrapper').style.display = 'none';
+		//runewordCategoryWrapper.style.display = 'none';
+		}
+	});
+
   
   document.getElementById('resetBtn').addEventListener('click', () => {
 	  // 1. 콤보박스 초기화
@@ -306,11 +519,15 @@ function renderOptionCombo(list) {
   });
 }
 function formatOptionText(opt) {
-  if (!opt.koKR) return opt.name;
+  if (!opt) return '(옵션 없음)';
+  if (!opt.koKR) return opt.name || '(이름 없음)';
   return opt.koKR.replace(/%d/g, '10').replace(/%s/g, '스킬명').replace(/%%/g, '%');
 }
 function showItemOptions(item, kind) {
-  const container = document.getElementById('optionsContainer');
+  const container = (kind === 'runwords')
+    ? document.getElementById('runewordOptionInputs')
+    : document.getElementById('optionsContainer');
+    
   container.innerHTML = '';
 
   const image = document.getElementById('itemImage');
@@ -322,13 +539,17 @@ function showItemOptions(item, kind) {
   }
 
   // 유니크 아이템에 한해 옵션 표시
-  if (kind === 'unique' && Array.isArray(item.description_filtered)) {
+  if ( (kind === 'unique'|| kind==='runwords') && Array.isArray(item.description_filtered)) {
     // 안내문구
-    const notice = document.createElement('p');
-    notice.textContent = '🛈 옵션을 제외하고 싶을 땐 빈값을 입력하세요';
-    notice.style.color = 'gray';
-    notice.style.marginBottom = '8px';
-    container.appendChild(notice);
+	// 안내 문구가 이미 존재하면 추가하지 않음
+	if (!container.querySelector('.option-notice')) {
+	  const notice = document.createElement('p');
+	  notice.className = 'option-notice';
+	  notice.textContent = '🛈 옵션을 제외하고 싶을 땐 빈값을 입력하세요';
+	  notice.style.color = 'gray';
+	  notice.style.marginBottom = '8px';
+	  container.appendChild(notice);
+	}
 
     item.description_filtered.forEach(opt => {
       const div = document.createElement('div');
@@ -371,50 +592,6 @@ function showItemOptions(item, kind) {
   }
 }
 
-// 옵션 표시
-function showItemOptions_tmp(item, kind) {
-  const container = document.getElementById('optionsContainer');
-  container.innerHTML = '';
-  
-  const image = document.getElementById('itemImage');
-  if (item && item.img) {
-    image.src = item.img;
-    image.hidden = false;
-  } else {
-    image.hidden = true;
-  }
-
-  if (kind === 'unique' && Array.isArray(item.description_filtered)) {
-    item.description_filtered.forEach(opt => {
-      const div = document.createElement('div');
-      div.className = 'option-group';
-      div.dataset.key = opt.property_id;
-      div.innerHTML = `
-        <label>${opt.property_kor}</label><br>
-        min: <input type="number" class="min" value="${opt.min ?? ''}"> 
-        max: <input type="number" class="max" value="${opt.max ?? ''}">
-		<button type="button" class="clearBtn" data-idx="${idx}">삭제</button>
-      `;
-      container.appendChild(div);
-    });
-	// 삭제 버튼 이벤트: min/max 비우기
-    // 삭제 버튼 생성 및 직접 이벤트 연결
-    const btn = document.createElement('button');
-    btn.textContent = '삭제';
-    btn.className = 'clearBtn';
-    btn.style.marginLeft = '8px';
-    btn.addEventListener('click', () => {
-      const minInput = div.querySelector('.min');
-      const maxInput = div.querySelector('.max');
-      if (minInput) minInput.value = '';
-      if (maxInput) maxInput.value = '';
-    });
-
-    div.appendChild(btn);
-    container.appendChild(div);
-	
-  }
-}
 
 // 아이템 추가
 const addItemBtn = document.getElementById('addItemBtn');
@@ -451,33 +628,50 @@ function removeSelectedItem(index) {
 const optionCombo = document.getElementById('optionCombo');
 
 optionCombo.addEventListener('change', () => {
-  if (!['material', 'magic', 'rare'].includes(selectedKind)) return;
+console.log("optionCombo.addEventListener=="+selectedKind);
+
+
+  if (!['material', 'magic', 'rare','runwords'].includes(selectedKind)) return;
   const selectedId = optionCombo.value;
   const selectedMeta = allOptionData.find(opt => opt.id == selectedId);
+  console.log('selectedId==='+selectedId);
+  console.log('selectedMeta==='+selectedMeta);
+ 
   if (!selectedId || selectedOptions.find(opt => opt.key == selectedId)) return;
-
+	
   if (selectedMeta?.global) {
     selectedOptions.push({ key: selectedId, label: formatOptionText(selectedMeta), checked: false });
   } else {
+	console.log(' not global options ');
     selectedOptions.push({ key: selectedId, min: '', max: '', label: formatOptionText(selectedMeta) });
   }
   renderSelectedOptions();
 });
 
 function renderSelectedOptions() {
-  const list = document.getElementById('optionList');
+	console.log('function renderSelectedOptions');
+	//runwords일땐 옵션 컨테이너 박스 명이 다름
+	
+	// ✅ selectedRunewordOptions에 복사해주기
+  if (selectedKind === 'runwords') {
+    selectedRunewordOptions = [...selectedOptions]; // ✅ 이 줄 추가
+  }
+  const list = (selectedKind === 'runwords')
+    ? document.getElementById('selectedRunewordOptions')
+    : document.getElementById('optionList');
+
   list.innerHTML = '';
 
   selectedOptions.forEach((opt, idx) => {
     const optionMeta = allOptionData.find(o => o.id == opt.key);
-    const li = document.createElement('li');
+    const li = document.createElement(selectedKind === 'runwords' ? 'div' : 'li');
 
     li.innerHTML = '';
 
     // 옵션명
     const label = document.createElement('span');
-    label.textContent = opt.label;
-    li.appendChild(label);
+	label.textContent = opt.label || optionMeta?.koKR || optionMeta?.name || '(알 수 없음)';
+	li.appendChild(label);
 
     if (optionMeta?.global) {
       // ✅ global 옵션은 체크박스 처리
@@ -499,6 +693,7 @@ function renderSelectedOptions() {
       li.appendChild(checkbox);
       li.appendChild(status);
     } else {
+		console.log('=====drawing not global options=====');
       // ✅ 일반 옵션은 min/max 입력
       const minInput = document.createElement('input');
       minInput.type = 'number';
@@ -609,37 +804,82 @@ generateBtn.addEventListener('click', async () => {
       });
     }
   });
+  
+
 
 } else {
-    const itemSelect = document.getElementById('itemSelect');
-    const selectedItem = itemData.find(i => i.id == itemSelect.value);
-    if (!selectedItem) {
-      alert("⚠ 아이템이 선택되지 않았습니다. 다시 선택해주세요.");
-      return;
-    }
-    const optionInputs = document.querySelectorAll('.option-group, #materialOptionInputs');
-    const options = [];
-    optionInputs.forEach(el => {
-      const key = el.dataset.key || null;
-      const minInput = el.querySelector('.min');
-      const maxInput = el.querySelector('.max');
-      const min = minInput ? minInput.value : '';
-      const max = maxInput ? maxInput.value : '';
-      if (min || max) options.push({ key, min, max });
-    });
-    payload = {
-      ItemKinds: selectedKind,
-      ItemKey: selectedItem.id,
-      Options: options.map(opt => ({
-        key: Number(opt.key),
-        min: opt.min ? Number(opt.min) : null,
-        max: opt.max ? Number(opt.max) : null
-      })),
-      prop_Ladder: ladder,
-      prop_Mode: mode,
-      prop_Ethereal: ethereal
-    };
-  }
+	const itemSelect = document.getElementById('itemSelect');
+	const selectedItem = itemData.find(i => i.id == itemSelect.value);
+	if (!selectedItem) {
+	  alert("⚠ 아이템이 선택되지 않았습니다. 다시 선택해주세요.");
+	  return;
+	}
+
+	// 기본 옵션 수집
+	const optionInputs = document.querySelectorAll('.option-group, #materialOptionInputs');
+	const options = [];
+	optionInputs.forEach(el => {
+	  const key = el.dataset.key || null;
+	  const minInput = el.querySelector('.min');
+	  const maxInput = el.querySelector('.max');
+	  const min = minInput ? minInput.value : '';
+	  const max = maxInput ? maxInput.value : '';
+	  if (min || max) options.push({ key, min, max });
+	});
+
+	// 기본 payload
+	payload = {
+	  ItemKinds: selectedKind,
+	  ItemKey: selectedItem.id,
+	  Options: options.map(opt => ({
+		key: Number(opt.key),
+		min: opt.min ? Number(opt.min) : null,
+		max: opt.max ? Number(opt.max) : null
+	  })),
+	  prop_Ladder: ladder,
+	  prop_Mode: mode,
+	  prop_Ethereal: ethereal
+	};
+
+	// ✅ 룬워드일 때 사용자 추가 옵션 병합
+	if (selectedKind === 'runwords' && Array.isArray(selectedRunewordOptions)) {
+		console.log(" 룬워드 옵션 추가 ");
+		const socketCount = selectedItem?.sockets ?? null;
+
+	  selectedRunewordOptions.forEach(opt => {
+		const optKey = Number(opt.key);
+		const isAlreadyIncluded = Array.isArray(payload.Options) && payload.Options.some(existing => existing.key === optKey);
+		if (!isAlreadyIncluded) {
+		  payload.Options.push({
+			key: optKey,
+			min: opt.min ? Number(opt.min) : null,
+			max: opt.max ? Number(opt.max) : null
+		  });
+		}
+	  });
+	  const checkedBoxes = document.querySelectorAll('#runewordTypeComboWrapper input[type="checkbox"]:checked');
+	  const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+	  
+		const matchedGroup = [
+		  ...new Set(
+			(selectedItem.type || [])
+			  .map(t => t.eng)
+			  .filter(eng => eng && eng !== "Ranged" )
+		  )
+		];
+	  const matchedid = runewordCategoryData
+		  .filter(cat => selectedIds.includes(String(cat.id)))
+		  .map(cat => cat.name)  // or cat.en, if it's stored as cat.en
+		  .filter(Boolean);      // null/undefined 방지
+
+	  if (matchedGroup.length > 0) {
+		const typeKey = `prop_Base Item (${matchedGroup.join(', ')}) ${socketCount}`;
+	    payload[typeKey] = matchedid.join(', ');
+	  }
+
+	}
+
+}
 
   const res = await fetch(API_CONFIG.MakeTraderieUrl, {
     method: 'POST',
