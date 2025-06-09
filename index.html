@@ -1,114 +1,109 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>트레더리 Diablo2 일괄검색</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <script src="config.js"></script>
   <script src="script.js" defer></script>
 </head>
 
 <body>
   <div id="mainLayout">
+    <!-- ✅ 왼쪽: 검색 영역 -->
+    <div id="inputSection">
+      <h2>트레더리 Diablo2 검색 링크 생성</h2>
 
-    <!-- 🔼 상단: 입력 / 결과 영역 -->
-    <div id="topSection">
-      <div id="inputSection">
-        <h2>트레더리 Diablo2 검색 링크 생성</h2>
-
-        <!-- API 설정 -->
-        <div style="margin-bottom: 12px; display: none;">
-          <label for="api-url-input"><strong>API 서버 주소:</strong></label>
-          <input type="text" id="api-url-input" readonly style="width: 250px; background-color: #eee;">
-          <button id="save-api-url"  style="display: none;">저장</button>
-          <button id="reset-api-url" style="display: none;">초기화</button>
-        </div>
-
-        <button id="resetBtn" style="margin-bottom: 10px;">🔄 전체 초기화</button>
-
-        <!-- 아이템 종류/이름 -->
-        <label>아이템 종류:</label>
-        <select id="itemKindSelect" style="margin-bottom: 8px;"></select>
-
-        <label for="itemSearchInput">아이템 이름:</label>
-        <input type="text" id="itemSearchInput" placeholder="아이템명 입력" style="width: 200px;">
-
-        <div class="row" id="categoryWrapper" style="display: none;">
-          <label for="categorySelect">카테고리:</label>
-          <select id="categorySelect"></select>
-        </div>
-
-        <div class="row">
-          <label for="itemSelect">아이템 목록:</label>
-          <select id="itemSelect"></select>
-          <button id="addItemBtn" style="display: none; margin-left: 8px;">추가</button>
-          <img id="itemImage" src="" alt="아이템 이미지" hidden>
-        </div>
-
-		<div id="runewordTypeComboWrapper" style="position: relative; display: none; margin-top: 8px;">
-		  <label><strong>아이템 타입:</strong></label>
-		  <div id="comboDisplay" style="border: 1px solid #ccc; padding: 5px; cursor: pointer; width: 200px;">
-			선택하세요 ▼
-		  </div>
-		  <div id="checkboxList" style="display: none; position: absolute; background: white; border: 1px solid #ccc; max-height: 200px; overflow-y: auto; width: 200px; z-index: 999;">
-			<!-- 체크박스 동적 생성 -->
-		  </div>
-		</div>
-		
-        <div id="bulkControls" style="margin-top: 8px; display: none;">
-          <button id="bulkAddBtn">➕ 일괄 추가</button>
-          <button id="bulkRemoveBtn">🗑 일괄 삭제</button>
-        </div>
-        <div id="selectedItemsWrapper" style="display: none; margin-top: 16px; border: 1px solid #ccc; padding: 8px; max-height: 200px; overflow-y: auto;">
-          <strong>선택된 아이템:</strong>
-          <ul id="itemList"></ul>
-        </div>
-
-        <!-- 옵션 선택 -->
-        <div class="row">
-          <input type="text" id="optionSearchInput" placeholder="옵션 검색" style="margin-top: 8px; width: 200px;">
-          <label for="optionCombo">옵션 선택:</label>
-          <select id="optionCombo">
-            <option value="">옵션을 선택하세요</option>
-          </select>
-        </div>
-
-        <div id="selectedOptionsWrapper" style="display: none; margin-top: 16px; border: 1px solid #ccc; padding: 8px; max-height: 200px; overflow-y: auto;">
-          <strong>선택된 옵션:</strong>
-          <ul id="optionList"></ul>
-        </div>
-
-        <!-- 서버 조건 -->
-        <label>서버 종류 (래더 여부):</label>
-        <select id="ladderSelect">
-          <option value="true">래더</option>
-          <option value="false">스탠</option>
-        </select>
-
-        <label>게임 모드:</label>
-        <select id="modeSelect">
-          <option value="softcore">소프트코어</option>
-          <option value="hardcore">하드코어</option>
-        </select>
-
-        <label>
-          <input type="checkbox" id="etherealCheck">
-          에테리얼만 보기
-        </label>
-
-        <div id="optionsContainer"></div>
-		<div id="runewordOptionInputs" style="margin-top: 12px;"></div>
-
-		<!-- 선택된 옵션 목록 -->
-		<div id="selectedRunewordOptions" style="margin-top: 12px;"></div>
-
-        <!-- 실행 버튼 -->
-        <button id="generateBtn" style="margin-top: 10px;">검색하기</button>
+      <!-- API 설정 (숨김) -->
+      <div style="margin-bottom: 12px; display: none;">
+        <label for="api-url-input"><strong>API 서버 주소:</strong></label>
+        <input type="text" id="api-url-input" readonly style="width: 250px; background-color: #eee;" />
+        <button id="save-api-url" style="display: none;">저장</button>
+        <button id="reset-api-url" style="display: none;">초기화</button>
       </div>
 
+      <button id="resetBtn">🔄 전체 초기화</button>
+
+      <label>아이템 종류:</label>
+      <select id="itemKindSelect"></select>
+
+      <label for="itemSearchInput">아이템 이름:</label>
+      <input type="text" id="itemSearchInput" placeholder="아이템명 입력" />
+
+      <div class="row" id="categoryWrapper" style="display: none;">
+        <label for="categorySelect">카테고리:</label>
+        <select id="categorySelect"></select>
+      </div>
+
+      <div class="row">
+        <label for="itemSelect">아이템 목록:</label>
+        <select id="itemSelect"></select>
+        <button id="addItemBtn" style="display: none; margin-left: 8px;">추가</button>
+        <img id="itemImage" src="" alt="아이템 이미지" hidden />
+      </div>
+
+      <div id="runewordTypeComboWrapper" style="position: relative; display: none;">
+        <label><strong>아이템 타입:</strong></label>
+        <div id="comboDisplay">
+          선택하세요 ▼
+        </div>
+        <div id="checkboxList">
+          <!-- 체크박스 동적 생성 -->
+        </div>
+      </div>
+
+      <div id="bulkControls" style="display: none;">
+        <button id="bulkAddBtn">➕ 일괄 추가</button>
+        <button id="bulkRemoveBtn">🗑 일괄 삭제</button>
+      </div>
+
+      <div id="selectedItemsWrapper" style="display: none;">
+        <strong>선택된 아이템:</strong>
+        <ul id="itemList"></ul>
+      </div>
+
+      <div class="row">
+        <input type="text" id="optionSearchInput" placeholder="옵션 검색" />
+        <label for="optionCombo">옵션 선택:</label>
+        <select id="optionCombo">
+          <option value="">옵션을 선택하세요</option>
+        </select>
+      </div>
+
+      <div id="selectedOptionsWrapper" style="display: none;">
+        <strong>선택된 옵션:</strong>
+        <ul id="optionList"></ul>
+      </div>
+
+      <label>서버 종류 (래더 여부):</label>
+      <select id="ladderSelect">
+        <option value="true">래더</option>
+        <option value="false">스탠</option>
+      </select>
+
+      <label>게임 모드:</label>
+      <select id="modeSelect">
+        <option value="softcore">소프트코어</option>
+        <option value="hardcore">하드코어</option>
+      </select>
+
+      <label for="etherealCheck">
+        <input type="checkbox" id="etherealCheck" />
+        에테리얼만 보기
+      </label>
+
+      <div id="optionsContainer"></div>
+      <div id="runewordOptionInputs"></div>
+      <div id="selectedRunewordOptions"></div>
+
+      <button id="generateBtn">검색하기</button>
+    </div>
+
+    <!-- ✅ 오른쪽: 결과 + 유튜브 -->
+    <div id="rightPanel">
       <div id="resultSection">
-        <div class="result-box" id="resultBox" style="display:none;">
+        <div class="result-box" id="resultBox" style="display: none;">
           <table id="listingTable">
             <thead>
               <tr>
@@ -125,19 +120,38 @@
         </div>
 
         <div id="loadingBox" style="display: none; text-align: center; margin-top: 20px;">
-          <img src="loading.gif" alt="로딩 중..." style="width: 48px; height: 48px;">
+          <img src="loading.gif" alt="로딩 중..." style="width: 48px; height: 48px;" />
           <p>트레더리 확인 중입니다...</p>
         </div>
       </div>
+<div id="youtubeAdContainer">
+  <div class="youtube-row">
+    <div class="youtube-text">
+      <!-- 프로필 이미지 -->
+      <img src="https://yt3.ggpht.com/r-bHvVerkrMe-Znl3uQCPwtgn2wC4APc1lkVGGeQ1j8rFzadkIISVLK8_af3kGmegUwT821s2g=s600-c-k-c0x00ffffff-no-rj-rp-mo"
+           alt="프로필 이미지"
+           class="youtube-profile" />
+      <p><strong>📺 노랑홍당무 유튜브 채널 구독해주세요!</strong></p>
+      <a href="https://www.youtube.com/@diuno88" target="_blank">👉 유튜브 채널 바로가기</a>
     </div>
 
-    <!-- 🔽 하단: 유튜브 광고 -->
-    <div id="youtubeAdContainer" style="background-color: #f0f0f0; padding: 16px; text-align: center; border-top: 1px solid #ccc;">
-      <p><strong>📺 노랑홍당무 유투브 채널 구독많이해주세요!</strong></p>
-      <a href="https://www.youtube.com/@diuno88" target="_blank" style="color: blue; text-decoration: underline;">👉 유튜브 채널 바로가기</a>
-      <div id="youtubeIframeWrapper" style="margin-top: 10px;"></div>
+    <!-- ✅ JS가 iframe을 삽입할 수 있도록 div wrapper 유지 -->
+    <div class="youtube-iframe">
+      <div id="youtubeIframeWrapper"></div>
     </div>
-
   </div>
+</div>
+
+
+    </div>
+  </div>
+
+  <!-- ✅ 하단: 저작권 안내 -->
+  <footer>
+    본 사이트는 <strong>Traderie 이용자의 편의성을 높이기 위해</strong> 제작된 비공식 팬 프로젝트입니다.<br />
+    게임 정보 및 이미지 출처: <a href="https://traderie.com" target="_blank">Traderie</a>, <a href="https://blizzard.com" target="_blank">Blizzard Entertainment</a><br />
+    Diablo II: Resurrected™, Blizzard Entertainment® 및 관련 로고는 Blizzard Entertainment의 상표입니다.<br />
+    This is a non-commercial fan project and is not affiliated with or endorsed by Blizzard Entertainment or Traderie.
+  </footer>
 </body>
 </html>
