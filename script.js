@@ -290,11 +290,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const optionSearchInput= document.getElementById('optionSearchInput');
   const wrapper = document.getElementById("youtubeIframeWrapper");
   const defaultOption = document.createElement('option');
+  
+
   defaultOption.value = '';
   defaultOption.textContent = '- 선택하세요 -';
   defaultOption.disabled = true;
   defaultOption.selected = true;
   kindSelect.appendChild(defaultOption);
+
+
 
   const res = await fetch(API_CONFIG.ItemKinds);
   const data = await res.json();
@@ -325,6 +329,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) {
     console.error("초기 데이터 로딩 실패:", error);
   }
+  
+  
+
   // 공통 iframe 생성 함수
   function createYouTubeIframe(videoId, title) {
     const iframe = document.createElement("iframe");
@@ -859,21 +866,24 @@ generateBtn.addEventListener('click', async () => {
 	  });
 	  const checkedBoxes = document.querySelectorAll('#runewordTypeComboWrapper input[type="checkbox"]:checked');
 	  const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
-	  
+	  const selectedItemId = document.getElementById('itemSelect').value;
 		const matchedGroup = [
 		  ...new Set(
-			(selectedItem.type || [])
-			  .map(t => t.eng)
-			  .filter(eng => eng && eng !== "Ranged" )
+			itemData
+			  .filter(item => String(item.id) === selectedItemId)
+			  .map(item => item["min-max-filter"])
+			  .filter(Boolean)
 		  )
 		];
+		console.log("선택된 ID:", selectedItemId);
+console.log("매칭된 Group:", matchedGroup);
 	  const matchedid = runewordCategoryData
 		  .filter(cat => selectedIds.includes(String(cat.id)))
 		  .map(cat => cat.name)  // or cat.en, if it's stored as cat.en
 		  .filter(Boolean);      // null/undefined 방지
-
+console.log("매칭된 matchedid:", matchedid);
 	  if (matchedGroup.length > 0) {
-		const typeKey = `prop_Base Item (${matchedGroup.join(', ')}) ${socketCount}`;
+		const typeKey = `prop_Base Item (${matchedGroup}) ${socketCount}`;
 	    payload[typeKey] = matchedid.join(', ');
 	  }
 
