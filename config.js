@@ -3,11 +3,11 @@
 //python -m http.server 8000
 
 //const BASE = localStorage.getItem('API_BASE_URL') || 'http://localhost:8000';
-const BASE = 'https://classification-pump-dui-definition.trycloudflare.com';
-
+const BASE = 'https://highlighted-you-senior-sewing.trycloudflare.com';
 const API_CONFIG = {
   ItemKinds: `${BASE}/ItemKinds`,
   ItemList: `${BASE}/ItemList`,
   MakeTraderieUrl: `${BASE}/MakeTraderieUrl`,
   selectCategories: `${BASE}/selectCategories`
+
 };
