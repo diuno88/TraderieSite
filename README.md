@@ -1,4 +1,6 @@
-# TraderieAlarm 서비스 구성 및 배포 안내
+# 서비스 구성 및 배포 안내
+### 각종 로그인 인증이 없는 서비스입니다
+
 
 ## 1. 서비스 개요
 - FastAPI 기반 API 서버 (AWS EC2 Docker 환경)
@@ -17,7 +19,4 @@
 - Docker 및 Docker Compose 사용
 - Cloudflare 계정 및 Quick Tunnel 설정 완료
 
-
-
-## 4. 유투브채널
-노랑홍당무
+![image](https://github.com/user-attachments/assets/83067bdd-3690-4647-a7ed-2810a6ba7b28)
