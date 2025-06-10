@@ -1,5 +1,8 @@
 # 서비스 구성 및 배포 안내
 ### 각종 로그인 인증이 없는 서비스입니다
+## 서비스 동작구조도 
+
+![image](https://github.com/user-attachments/assets/83067bdd-3690-4647-a7ed-2810a6ba7b28)
 
 
 ## 1. 서비스 개요
@@ -19,4 +22,3 @@
 - Docker 및 Docker Compose 사용
 - Cloudflare 계정 및 Quick Tunnel 설정 완료
 
-![image](https://github.com/user-attachments/assets/83067bdd-3690-4647-a7ed-2810a6ba7b28)
