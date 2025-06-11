@@ -432,15 +432,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 		opt.textContent = kor ? `${kor} (${eng})` : eng;
 		categorySelect.appendChild(opt);
 	  });
+	  document.getElementById('runewordTypeComboWrapper').style.display = 'none';
       if (ctgList.length > 0) categorySelect.dispatchEvent(new Event('change'));
     }
 	else if (isRuneword) {
+		document.getElementById('runewordTypeComboWrapper').style.display = 'block';
 		await handleRunewordSelection(itemRes);  // 🔥 이 함수를 따로 만듦
 		
-		
-		
-		
 	}else {
+	  document.getElementById('runewordTypeComboWrapper').style.display = 'none';
       categoryWrapper.style.display = 'none';
       optionCombo.style.display = 'none';
       const itemDataRes = await itemRes.json();
