@@ -240,9 +240,7 @@ async function handleRunewordSelection(itemRes) {
   if (itemData.length > 0) {
     itemSelect.dispatchEvent(new Event('change'));
   }
-  if (optionData.length > 0) {
-    optionCombo.dispatchEvent(new Event('change'));
-  }
+  
 }
 
 
@@ -326,6 +324,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const wrapper = document.getElementById("youtubeIframeWrapper");
   const defaultOption = document.createElement('option');
   
+  //래더 비래더 combo 
+  const combo = document.querySelector("#ladderCheckboxCombo .combo-display");
+  const options = document.querySelector("#ladderCheckboxCombo .combo-options");
+  const checkboxes = options.querySelectorAll("input[type=checkbox]");
 
   defaultOption.value = '';
   defaultOption.textContent = '- 선택하세요 -';
@@ -333,7 +335,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   defaultOption.selected = true;
   kindSelect.appendChild(defaultOption);
 
+  combo.addEventListener("click", () => {
+    options.style.display = options.style.display === "none" ? "block" : "none";
+  });
 
+  // 외부 클릭 시 닫기
+  document.addEventListener("click", (e) => {
+    if (!document.querySelector("#ladderCheckboxCombo").contains(e.target)) {
+      options.style.display = "none";
+    }
+  });
+  // 선택된 값 표시
+  checkboxes.forEach(cb => {
+    cb.addEventListener("change", () => {
+      const selected = Array.from(checkboxes)
+        .filter(c => c.checked)
+        .map(c => c.nextElementSibling.textContent.trim());
+
+      combo.textContent = selected.length > 0 ? selected.join(", ") + " ▼" : "선택하세요 ▼";
+    });
+  });
 
   const res = await fetch(API_CONFIG.ItemKinds);
   const data = await res.json();
@@ -675,11 +696,12 @@ function removeSelectedItem(index) {
 const optionCombo = document.getElementById('optionCombo');
 
 optionCombo.addEventListener('change', () => {
-console.log("optionCombo.addEventListener=="+selectedKind);
+	console.log("optionCombo.addEventListener=="+selectedKind);
 
-
-  if (!['material', 'magic', 'rare','runwords'].includes(selectedKind)) return;
   const selectedId = optionCombo.value;
+  if (!selectedId || selectedId === "") return; // ✅ 기본값이면 무시
+  if (!['material', 'magic', 'rare','runwords'].includes(selectedKind)) return;
+  
   const selectedMeta = allOptionData.find(opt => opt.id == selectedId);
   console.log('selectedId==='+selectedId);
   console.log('selectedMeta==='+selectedMeta);
@@ -807,7 +829,7 @@ function removeOption(index) {
 // URL 생성 버튼 클릭
 const generateBtn = document.getElementById('generateBtn');
 generateBtn.addEventListener('click', async () => {
-  const ladder = document.getElementById('ladderSelect').value === 'true';
+  
   const mode = document.getElementById('modeSelect').value;
   const ethereal = document.getElementById('etherealCheck').checked;
   const loadingBox = document.getElementById('loadingBox');
@@ -816,6 +838,11 @@ generateBtn.addEventListener('click', async () => {
   loadingBox.style.display = 'block';
   const startTime = Date.now(); // 시작 시각 저장
   let payload;
+  const ladderCheckboxes = document.querySelectorAll('#ladderCheckboxCombo input[type=checkbox]:checked');
+  const ladderValues = Array.from(ladderCheckboxes).map(cb => cb.value); // 이미 'Ladder' 또는 'Non Ladder'
+  const ladderValueString = ladderValues.join(','); // "Ladder", "Non Ladder", or "Ladder,Non Ladder"
+
+
 
   if (['material', 'magic', 'rare'].includes(selectedKind)) {
   if (selectedItems.length === 0) {
@@ -830,7 +857,7 @@ generateBtn.addEventListener('click', async () => {
       img: item.img
     })),
     options: [],
-    prop_Ladder: ladder,
+    prop_Ladder: ladderValueString,
     prop_Mode: mode,
     prop_Ethereal: ethereal
   };
@@ -883,7 +910,7 @@ generateBtn.addEventListener('click', async () => {
 		min: opt.min ? Number(opt.min) : null,
 		max: opt.max ? Number(opt.max) : null
 	  })),
-	  prop_Ladder: ladder,
+	  prop_Ladder: ladderValueString,
 	  prop_Mode: mode,
 	  prop_Ethereal: ethereal
 	};
