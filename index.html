@@ -77,10 +77,19 @@
       </div>
 
       <label>서버 종류 (래더 여부):</label>
-      <select id="ladderSelect">
-        <option value="true">래더</option>
-        <option value="false">스탠</option>
-      </select>
+		<div id="ladderCheckboxCombo" class="checkbox-combo">
+		  <div class="combo-display">선택하세요 ▼</div>
+		  <div class="combo-options" style="display: none;">
+			<label class="checkbox-option">
+			  <input type="checkbox" value="Ladder" />
+			  <span class="checkbox-label">래더</span>
+			</label>
+			<label class="checkbox-option">
+			  <input type="checkbox" value="Non Ladder" />
+			  <span class="checkbox-label">스탠</span>
+			</label>
+		  </div>
+		</div>
 
       <label>게임 모드:</label>
       <select id="modeSelect">
