@@ -28,6 +28,54 @@ body {
   gap: 16px;
   box-sizing: border-box;
 }
+/* ladder or non ladder*/
+.checkbox-combo {
+  position: relative;
+  width: 100px;
+  border: 1px solid #ccc;
+  background-color: white;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.combo-display {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.combo-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  border: 1px solid #ccc;
+  background-color: white;
+  z-index: 10;
+  padding: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: black;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.checkbox-option input[type="checkbox"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+
+
 
 /* 오른쪽 패널: 결과 + 유튜브 */
 #rightPanel {
