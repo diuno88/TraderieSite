@@ -58,6 +58,9 @@ footer {
   padding: 16px;
   background-color: #fafafa;
   border-top: 1px solid #ccc;
+  width: 100%;
+  max-width: 100%;
+  word-break: keep-all;
 }
 
 /* 카드 스타일 섹션 */
@@ -277,4 +280,16 @@ label[for="etherealCheck"] {
   border-radius: 50%;     /* 원형 프로필 */
   object-fit: cover;
   margin-bottom: 8px;
+}
+@media (max-width: 768px) {
+  footer {
+    padding: 16px 12px;
+    text-align: left;
+    font-size: 0.8em;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #fafafa;
+    border-top: 1px solid #ccc;
+    line-height: 1.5;
+  }
 }
