@@ -98,32 +98,67 @@ function renderRunewordTypeCheckboxCombo(selectedItem, categoryData) {
   dropdown.appendChild(selectAllBtn);
   dropdown.appendChild(clearAllBtn);
   dropdown.appendChild(document.createElement('hr'));
-
+	const searchInput = document.createElement('input');
+	searchInput.type = 'text';
+	searchInput.placeholder = '타입 필터';
+	searchInput.style.width = '100%';
+	searchInput.style.padding = '6px';
+	searchInput.style.marginBottom = '8px';
+	searchInput.style.boxSizing = 'border-box';
+	searchInput.style.border = '1px solid #ccc';
+	searchInput.style.borderRadius = '4px';
+	dropdown.appendChild(searchInput);
+	searchInput.addEventListener('input', () => {
+	  const keyword = searchInput.value.trim().toLowerCase();
+	  dropdown.querySelectorAll('label').forEach(label => {
+		const text = label.textContent.trim().toLowerCase();
+		label.style.display = text.includes(keyword) ? 'flex' : 'none';
+	  });
+	});
   // ✅ 체크박스 렌더링
-  matchedCategories.forEach(cat => {
-    const label = document.createElement('label');
-    label.style.display = 'block';
-    label.style.margin = '4px 0';
+	// ✅ 바뀐 부분: 텍스트를 span으로 감싸고 label을 flex로
+	matchedCategories.forEach(cat => {
+	  const label = document.createElement('label');
+	  label.className = 'runeword-checkbox-label'; // CSS 스타일 연결
+	  label.style.display = 'flex';
+	  label.style.alignItems = 'center';
+	  label.style.gap = '8px';
+	  label.style.margin = '6px 0';
+	  label.style.fontSize = '0.95em';
+	  label.style.cursor = 'pointer';
+	  
+	
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.name = 'runewordCategory';
-    checkbox.value = cat.id;
+	  const checkbox = document.createElement('input');
+	  checkbox.type = 'checkbox';
+	  checkbox.name = 'runewordCategory';
+	  checkbox.value = cat.id;
+	  checkbox.style.margin = '0';
+	  checkbox.style.transform = 'scale(1.1)';
+	  checkbox.style.verticalAlign = 'middle';
 
-    // 자동 선택 기준: sockets 일치 + type 일치
-    const isSameSocket = selectedItem.sockets === cat.sockets;
-    const isSameType = simplifiedTypes.includes((cat.group || cat.ctg || '').toLowerCase());
+	  const span = document.createElement('span');
+	  span.textContent = cat.korName || cat.name;
+	  span.style.lineHeight = '1';
 
-    checkbox.checked = isSameSocket && isSameType;
+	  const isSameSocket = selectedItem.sockets === cat.sockets;
+	  const isSameType = simplifiedTypes.includes((cat.group || cat.ctg || '').toLowerCase());
+	  checkbox.checked = isSameSocket && isSameType;
 
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(` ${cat.korName || cat.name}`));
-    dropdown.appendChild(label);
-  });
+	  label.appendChild(checkbox);
+	  label.appendChild(span); // ✅ 텍스트는 span에 담아야 정렬됨
+	  
+
+	  dropdown.appendChild(label);
+	  
+	});
 
   comboButton.addEventListener('click', () => {
     dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
   });
+  
+  
+
 
   comboContainer.appendChild(comboButton);
   comboContainer.appendChild(dropdown);
@@ -213,7 +248,7 @@ async function handleRunewordSelection(itemRes) {
 
 
 function renderRunewordCategoryCombo(categoryList) {
-  const container = document.getElementById('runewordCategoryWrapper');
+  const container = document.getElementById('runewordTypeComboWrapper');
   container.innerHTML = '';
 
   categoryList.forEach(cat => {
@@ -459,9 +494,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 		if (selectedKind === 'runwords') {
 		  document.getElementById('runewordTypeComboWrapper').style.display = 'block';
-		renderRunewordTypeCheckboxCombo(selectedItem, runewordCategoryData);
+		  renderRunewordTypeCheckboxCombo(selectedItem, runewordCategoryData);
 		} else {
-		  document.getElementById('runewordCategoryWrapper').style.display = 'none';
+		  document.getElementById('runewordTypeComboWrapper').style.display = 'none';
 		//runewordCategoryWrapper.style.display = 'none';
 		}
 	});
@@ -542,6 +577,7 @@ function showItemOptions(item, kind) {
   container.innerHTML = '';
 
   const image = document.getElementById('itemImage');
+  
   if (item && item.img) {
     image.src = item.img;
     image.hidden = false;
