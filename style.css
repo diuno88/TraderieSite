@@ -1,3 +1,6 @@
+
+
+
 /* 전체 기본 설정 */
 body {
   font-family: Arial, sans-serif;
@@ -121,6 +124,7 @@ button:hover {
 /* 룬워드 타입 체크박스 */
 #runewordTypeComboWrapper label {
   margin-bottom: 4px;
+  
 }
 
 #comboDisplay {
@@ -133,35 +137,55 @@ button:hover {
   background-color: #fff;
 }
 
-#checkboxList {
-  position: absolute;
-  background: white;
-  border: 1px solid #ccc;
-  max-height: 200px;
-  overflow-y: auto;
-  width: 200px;
-  z-index: 999;
-  display: none;
+/*아이템 타입 동적콤보*/
+.runeword-checkbox-label {
+  display: flex;
+  align-items: center; /* baseline or center 가능 */
+  gap: 6px;
+  padding: 4px 6px;
+  margin: 2px 0;
+  font-size: 0.95em;
+  width: 100%;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-#checkboxList label {
-  display: block;
-  padding: 4px 8px;
-  font-size: 0.9em;
+.runeword-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
-#checkboxList input[type="checkbox"] {
-  margin-right: 6px;
+.runeword-checkbox-label span {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  line-height: 1.2;
+  font-weight: bold;
 }
+
+
+
+
 
 /* unique 아이템 이미지 */
 #itemImage {
   max-width: 25%;
   height: auto;
-  display: block;
   margin-top: 8px;
 }
-
+#itemImage {
+  display: block;
+}
+#itemImage[hidden] {
+  display: none !important;
+}
 /* 에테리얼 체크박스 정렬 */
 #etherealCheck {
   width: 16px;     /* ✅ 크기 확대 */
