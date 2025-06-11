@@ -1,6 +1,3 @@
-
-
-
 /* 전체 기본 설정 */
 body {
   font-family: Arial, sans-serif;
@@ -43,7 +40,7 @@ body {
 
 /* 검색 결과 */
 #resultSection {
-  flex: 8;
+  flex: 1;
   overflow-y: auto;
   padding: 16px;
   box-sizing: border-box;
@@ -75,9 +72,10 @@ footer {
 /* 폼 관련 요소 */
 label {
   font-weight: bold;
-  margin-top: 8px;
+  margin-top: 6px;
+  margin-bottom: 2px;
   display: block;
-  font-size: 0.95em;
+  font-size: 0.9em;
 }
 
 input, select {
@@ -281,15 +279,4 @@ label[for="etherealCheck"] {
   object-fit: cover;
   margin-bottom: 8px;
 }
-@media (max-width: 768px) {
-  footer {
-    padding: 16px 12px;
-    text-align: left;
-    font-size: 0.8em;
-    width: 100%;
-    box-sizing: border-box;
-    background-color: #fafafa;
-    border-top: 1px solid #ccc;
-    line-height: 1.5;
-  }
-}
+
