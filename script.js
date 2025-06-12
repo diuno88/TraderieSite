@@ -942,14 +942,13 @@ generateBtn.addEventListener('click', async () => {
 			  .filter(Boolean)
 		  )
 		];
-		console.log("선택된 ID:", selectedItemId);
-console.log("매칭된 Group:", matchedGroup);
+
 	  const matchedid = runewordCategoryData
 		  .filter(cat => selectedIds.includes(String(cat.id)))
 		  .map(cat => cat.name)  // or cat.en, if it's stored as cat.en
 		  .filter(Boolean);      // null/undefined 방지
-console.log("매칭된 matchedid:", matchedid);
-	  if (matchedGroup.length > 0) {
+		//선택한 타입이 있을때만 합니다 
+	  if (matchedGroup.length > 0 && matchedid.length >0) {
 		const typeKey = `prop_Base Item (${matchedGroup}) ${socketCount}`;
 	    payload[typeKey] = matchedid.join(', ');
 	  }
