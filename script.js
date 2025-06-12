@@ -950,7 +950,7 @@ generateBtn.addEventListener('click', async () => {
 		//선택한 타입이 있을때만 합니다 
 	  if (matchedGroup.length > 0 && matchedid.length >0) {
 		const typeKey = `prop_Base Item (${matchedGroup}) ${socketCount}`;
-	    payload[typeKey] = matchedid.join(', ');
+	    payload[typeKey] = matchedid.join(',');
 	  }
 
 	}
