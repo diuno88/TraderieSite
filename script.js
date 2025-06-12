@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     option.textContent = kind.name.name;
     kindSelect.appendChild(option);
   });
-  if (data.terror_zone) {
+  if (data.terror_zone_info) {
       document.getElementById("currentZone").textContent = data.terror_zone["현재 테러존"];
       document.getElementById("nextZone").textContent = data.terror_zone["다음 테러존"];
    }
