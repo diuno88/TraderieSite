@@ -68,6 +68,7 @@
       </div>
 
       <div class="row">
+	    <label for="optionSearchInput">옵션 검색</label>
         <input type="text" id="optionSearchInput" placeholder="옵션 검색" />
         <label for="optionCombo">옵션 선택:</label>
         <select id="optionCombo">
@@ -79,9 +80,7 @@
         <strong>선택된 옵션:</strong>
         <ul id="optionList"></ul>
       </div>
-
-      <label>서버 종류 (래더 여부):</label>
-		<div id="ladderCheckboxCombo" class="checkbox-combo">
+		<!--<div id="ladderCheckboxCombo" class="checkbox-combo">
 		  <div class="combo-display">선택하세요 ▼</div>
 		  <div class="combo-options" style="display: none;">
 			<label class="checkbox-option">
@@ -93,13 +92,31 @@
 			  <span class="checkbox-label">스탠</span>
 			</label>
 		  </div>
+		</div>-->
+		<div class="row" id="ladderRadioGroup">
+		  <label><strong>서버 종류 (래더 여부):</strong></label>
+		  <label class="radio-inline">
+			<input type="radio" name="ladderType" value="Ladder" checked /> 래더
+		  </label>
+		  <label class="radio-inline">
+			<input type="radio" name="ladderType" value="Non Ladder" /> 스탠
+		  </label>
 		</div>
 
-      <label>게임 모드:</label>
-      <select id="modeSelect">
+      
+      <!--<select id="modeSelect">
         <option value="softcore">소프트코어</option>
         <option value="hardcore">하드코어</option>
-      </select>
+      </select>-->
+		<div class="row" id="modeRadioGroup">
+		  <label><strong>게임 모드:</strong></label>
+		  <label class="radio-inline">
+			<input type="radio" name="gameMode" value="softcore" checked /> 소프트코어
+		  </label>
+		  <label class="radio-inline">
+			<input type="radio" name="gameMode" value="hardcore" /> 하드코어
+		  </label>
+		</div>
 
       <label for="etherealCheck">
         <input type="checkbox" id="etherealCheck" />
