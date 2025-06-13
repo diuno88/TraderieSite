@@ -224,7 +224,7 @@ async function handleRunewordSelection(itemRes) {
   itemData.forEach(item => {
     const opt = document.createElement('option');
     opt.value = item.id;
-    opt.textContent = item.korName || item.name;
+    opt.textContent = item.korName || item.name ;
     itemSelect.appendChild(opt);
   });
   
@@ -325,9 +325,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const defaultOption = document.createElement('option');
   
   //래더 비래더 combo 
-  const combo = document.querySelector("#ladderCheckboxCombo .combo-display");
-  const options = document.querySelector("#ladderCheckboxCombo .combo-options");
-  const checkboxes = options.querySelectorAll("input[type=checkbox]");
+  //const combo = document.querySelector("#ladderCheckboxCombo .combo-display");
+  //const options = document.querySelector("#ladderCheckboxCombo .combo-options");
+  //const checkboxes = options.querySelectorAll("input[type=checkbox]");
 
   defaultOption.value = '';
   defaultOption.textContent = '- 선택하세요 -';
@@ -335,26 +335,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   defaultOption.selected = true;
   kindSelect.appendChild(defaultOption);
 
-  combo.addEventListener("click", () => {
-    options.style.display = options.style.display === "none" ? "block" : "none";
-  });
+  //combo.addEventListener("click", () => {
+  //  options.style.display = options.style.display === "none" ? "block" : "none";
+  //});
 
   // 외부 클릭 시 닫기
-  document.addEventListener("click", (e) => {
-    if (!document.querySelector("#ladderCheckboxCombo").contains(e.target)) {
-      options.style.display = "none";
-    }
-  });
+  //document.addEventListener("click", (e) => {
+  //  if (!document.querySelector("#ladderCheckboxCombo").contains(e.target)) {
+  //    options.style.display = "none";
+  //  }
+  //});
   // 선택된 값 표시
-  checkboxes.forEach(cb => {
-    cb.addEventListener("change", () => {
-      const selected = Array.from(checkboxes)
-        .filter(c => c.checked)
-        .map(c => c.nextElementSibling.textContent.trim());
-
-      combo.textContent = selected.length > 0 ? selected.join(", ") + " ▼" : "선택하세요 ▼";
-    });
-  });
+  //checkboxes.forEach(cb => {
+  //  cb.addEventListener("change", () => {
+  //    const selected = Array.from(checkboxes)
+  //      .filter(c => c.checked)
+  //      .map(c => c.nextElementSibling.textContent.trim());
+  //    combo.textContent = selected.length > 0 ? selected.join(", ") + " ▼" : "선택하세요 ▼";
+  //  });
+  //});
 
   const res = await fetch(API_CONFIG.ItemKinds);
   const data = await res.json();
@@ -365,8 +364,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     kindSelect.appendChild(option);
   });
   if (data.terror_zone_info) {
-      document.getElementById("currentZone").textContent = data.terror_zone["현재 테러존"];
-      document.getElementById("nextZone").textContent = data.terror_zone["다음 테러존"];
+      document.getElementById("currentZone").textContent = data.terror_zone_info["currTerror"];
+      document.getElementById("nextZone").textContent = data.terror_zone_info["nextTerror"];
    }
 
    try {  
@@ -493,13 +492,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const url = `${API_CONFIG.selectCategories}?kind=${encodeURIComponent(selectedKind)}&ctg=${encodeURIComponent(ctg)}`;
     const ctgRes = await fetch(url);
     const data = await ctgRes.json();
+	
 
     itemData = data.items || [];
     itemSelect.innerHTML = '';
     itemData.forEach(item => {
       const option = document.createElement('option');
+	  const tier = item.tier;
       option.value = item.id;
-      option.textContent = item.korName || item.koKR || item.name || item.id;
+	  const name = item.korName || item.koKR || item.name || item.id;
+      option.textContent = tier ? `${name} (${tier})` : name;
       itemSelect.appendChild(option);
     });
     if (itemData.length > 0) showItemOptions(itemData[0], selectedKind);
@@ -541,12 +543,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	  // 3. 옵션/아이템 관련 영역 초기화 및 숨김
 	  document.getElementById('optionsContainer').innerHTML = '';
+	  document.getElementById('runewordOptionInputs').innerHTML = '';
+	  document.getElementById('selectedRunewordOptions').innerHTML = '';
 	  document.getElementById('itemImage').hidden = true;
 	  document.getElementById('addItemBtn').style.display = 'none';
 	  document.getElementById('selectedItemsWrapper').style.display = 'none';
 	  document.getElementById('selectedOptionsWrapper').style.display = 'none';
 	  document.getElementById('itemList').innerHTML = '';
 	  document.getElementById('optionList').innerHTML = '';
+	  
 
 	  // 4. 상태 변수 초기화
 	  selectedItems = [];
@@ -835,19 +840,20 @@ function removeOption(index) {
 const generateBtn = document.getElementById('generateBtn');
 generateBtn.addEventListener('click', async () => {
   
-  const mode = document.getElementById('modeSelect').value;
+  //const mode = document.getElementById('modeSelect').value;
   const ethereal = document.getElementById('etherealCheck').checked;
   const loadingBox = document.getElementById('loadingBox');
   const resultBox = document.getElementById('resultBox');
-  resultBox.style.display = 'none';
+  // ✅ 로딩 표시 시작
   loadingBox.style.display = 'block';
+  resultBox.style.display = 'none';
   const startTime = Date.now(); // 시작 시각 저장
   let payload;
-  const ladderCheckboxes = document.querySelectorAll('#ladderCheckboxCombo input[type=checkbox]:checked');
-  const ladderValues = Array.from(ladderCheckboxes).map(cb => cb.value); // 이미 'Ladder' 또는 'Non Ladder'
-  const ladderValueString = ladderValues.join(','); // "Ladder", "Non Ladder", or "Ladder,Non Ladder"
-
-
+//  const ladderCheckboxes = document.querySelectorAll('#ladderCheckboxCombo input[type=checkbox]:checked');
+//  const ladderValues = Array.from(ladderCheckboxes).map(cb => cb.value); // 이미 'Ladder' 또는 'Non Ladder'
+//  const ladderValueString = ladderValues.join(','); // "Ladder", "Non Ladder", or "Ladder,Non Ladder"
+	const ladderValueString = document.querySelector('input[name="ladderType"]:checked').value;
+	const mode = document.querySelector('input[name="gameMode"]:checked').value;
 
   if (['material', 'magic', 'rare'].includes(selectedKind)) {
   if (selectedItems.length === 0) {
