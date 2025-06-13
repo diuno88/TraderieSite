@@ -501,7 +501,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	  const tier = item.tier;
       option.value = item.id;
 	  const name = item.korName || item.koKR || item.name || item.id;
-      option.textContent = tier ? `${name} (${tier})` : name;
+      option.textContent = tier ? `${name} (${tier})` : name;
       itemSelect.appendChild(option);
     });
     if (itemData.length > 0) showItemOptions(itemData[0], selectedKind);
