@@ -326,7 +326,7 @@ footer {
 
 /* ✅ 삭제 버튼 높이 맞추기 */
 .option-range-group button {
-  height: 32px;
+  height: 28px;
   padding: 0 10px;
 }
 
