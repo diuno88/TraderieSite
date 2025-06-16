@@ -3,7 +3,7 @@
 //python -m http.server 8000
 
 //const BASE = localStorage.getItem('API_BASE_URL') || 'http://localhost:8000';
-const BASE = 'https://butts-light-wireless-anna.trycloudflare.com';
+const BASE = 'https://considers-erik-wishes-darwin.trycloudflare.com';
 const API_CONFIG = {
   ItemKinds: `${BASE}/ItemKinds`,
   ItemList: `${BASE}/ItemList`,
